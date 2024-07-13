@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build House",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-g",
+                "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/main.cpp",
+                "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/House.cpp",
+                "-o",
+                "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/house"  // Ensure the output is `house`
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Generated task to build House.cpp and main.cpp"
+        }
+    ]
+}

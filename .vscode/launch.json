@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug House",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/house",  // Ensure this matches the output executable name
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build House",
+            "miDebuggerPath": "C:/MinGW/bin/gdb.exe",
+            "logging": {
+                "engineLogging": true,
+                "trace": true,
+                "traceResponse": true
+            }
+        }
+    ]
+}
