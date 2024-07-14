@@ -1,39 +1,43 @@
-#include "Sensors.h"
+
+#include "sensors.h"
 #include "House.h"
 
-bool ConcreteWallsSensor::isWall(Direction d) const {
-    //enum class Direction { North, East, South, West };
-    bool res = false;
-    switch (d) 
+Sensors::Sensors() {
+    // Constructor implementation
+}
+
+Sensors::~Sensors() {
+    // Destructor implementation
+}
+
+int Sensors::dirtLevel() const {
+    // Implementation of dirtLevel method
+    return 0; // Placeholder return value
+}
+
+bool Sensors::isWall(Direction d) const {
+    
+    /*/switch (d) 
     {
     case ("North"):
-        res = (getLayout()[getCurrX()][getCurrY()-1] == 'W');
-        break;
+        res = (layout[getCurrX()][getCurrY()-1] == 'W');
+        return true;
     
     case ("South"):
         res = (getLayout()[getCurrX()][getCurrY()+1] == 'W');
-        break;
+        return true;
     
     case ("East"):
         res = (getLayout()[getCurrX()+1][getCurrY()] == 'W');
-        break;
+        return true;
 
     case ("West"):
         res = (getLayout()[getCurrX()-1][getCurrY()] == 'W');
-        break;
+        return true;
 
     default:
-        return res;
-        break;
+        return false;
     }:
-    
+    /**/
+    return false; 
 }
-
-int ConcreteDirtSensor::dirtLevel() const {
-    return getLayout()[getCurrX()][getCurrY()];
-}
-
-std::size_t ConcreteBatteryMeter::getBatteryState() const {
-    return getBattery();
-}
-

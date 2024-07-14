@@ -2,26 +2,24 @@
 #define SENSORS_H
 
 
-#include "Direction.h"
-#include "WallsSensor.h"
-#include "DirtSensor.h"
-#include "BatteryMeter.h"
+#include "enums.h"
+#include "dirt_sensor.h"
+#include "wall_sensor.h"
+#include "Battery_meter.h"
 
 
-
-class ConcreteWallsSensor : public WallsSensor {
+class Sensors : public DirtSensor, public WallsSensor {
     public:
-        bool isWall(Direction d) const override;
-};
+        Sensors();
+        virtual ~Sensors();
 
-class ConcreteDirtSensor : public DirtSensor {
-    public:
+        // DirtSensor implementation
         int dirtLevel() const override;
+
+        // WallsSensor implementation
+        bool isWall(Direction d) const override;
+        
+        // Additional members and methods can be added here
 };
 
-class ConcreteBatteryMeter : public BatteryMeter {
-    public:
-        std::size_t getBatteryState() const override;
-};
-
-#endif // SENSORS_H
+#endif // SENSORS_H_
