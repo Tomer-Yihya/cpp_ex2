@@ -1,5 +1,5 @@
 #include "House.h"
-#include "Algorithm.h"
+#include "MyAlgorithm.h"
 
 void MyAlgorithm::setMaxSteps(std::size_t maxSteps) {
     this->maxSteps = maxSteps;

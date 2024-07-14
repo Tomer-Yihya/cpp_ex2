@@ -4,16 +4,22 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include "Coordinates.h"
+
+
 
 class House {
+
 private:
-    // Additional methods to handle house data...
+    
     std::string fileName;
     int maxSteps;
     int maxBattery;
     int battery;
     int rows;
     int cols;
+    int totalDirt;
+    //Coordinates DockingStation;
     int curr_x;
     int curr_y;
     int docking_x;
@@ -46,7 +52,6 @@ public:
     int getYDocking() const;
     int getCurrX() const;
     int getCurrY() const;
-
 
     // print function - Debugging
     void printDocking();

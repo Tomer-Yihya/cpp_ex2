@@ -1,4 +1,10 @@
 #include "House.h"
+#include "enums.h"
+/*/#include "battery_meter.h"
+#include "Coordinates.h"
+#include "dirt_sensor.h"
+#include "MyAlgorithm.h"
+/**/
 #include <iostream>
 #include <string>
 
@@ -10,7 +16,7 @@ void layout_test (std::string file_name){
     file_path += file_name;
 
     House house;
-    std::cout << "Testing: " << file_name << std::endl;
+    //std::cout << "Testing: " << file_name << std::endl;
     try {
         house.loadFromFile(file_path);
     } 

@@ -33,7 +33,6 @@ bool House::loadFromFile(const std::string& file_path) {
     if (!checkParameter(line, "Rows", rows)) return false;
     std::getline(file, line); 
     if (!checkParameter(line, "Cols", cols)) return false;
-    
     battery = maxBattery;
 
     int index = 0;
@@ -46,7 +45,7 @@ bool House::loadFromFile(const std::string& file_path) {
     }
 
     // for Debugging    
-    std::vector<std::vector<char>> originalLayout = layout;
+    //std::vector<std::vector<char>> originalLayout = layout;
 
     // makes sure that the Layout is exactly the size rows on cols
     cutExtraWalls();
@@ -54,18 +53,22 @@ bool House::loadFromFile(const std::string& file_path) {
     // adding an outer frame of walls
     addWalls();
     
-    // Find the docking station
+    // Find the docking station and update totalDirt
     bool found_docking = false;
     for (int y = 0; y < static_cast<int>(layout.size()); ++y) {
         for (int x = 0; x < static_cast<int>(layout[y].size()); ++x) {
             if (layout[y][x] == 'D') {
                 found_docking = true;
+                //DockingStation = Coordinates(x,y); 
                 docking_x = x;
                 docking_y = y;
                 curr_x = docking_x;
                 curr_y = docking_y;
                 break;
             }
+        }
+        if(found_docking){
+            break;
         }
     }
     
