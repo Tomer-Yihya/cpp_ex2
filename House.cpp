@@ -1,26 +1,28 @@
-#ifndef SENSORS_H
-#define SENSORS_H
-
 #include "House.h"
 #include <iostream>
+#include <string>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 
 // construnctor
-/*House (const std::string& file_path) { 
-    loadFromFile(file_path);
+House::House(const std::string& file_path) { 
+    try {
+        if (!loadFromFile(file_path)) {
+            throw std::runtime_error("Failed to open the input file.");
+        }
+    } 
+    catch (const std::exception& ex) {
+        std::cerr << "Error: can't load the house layout From the File" << std::endl;
+    } 
 }
-*/
-
 
 
 bool House::loadFromFile(const std::string& file_path) {
     
     std::ifstream file(file_path);
     if (!file) {
-        //return false;
-        throw std::runtime_error("Failed to open the input file.");
+        return false;
     }
     std::string line;
     //std::vector<char> row = std::vector<char>(line.begin(), line.end());
@@ -35,7 +37,6 @@ bool House::loadFromFile(const std::string& file_path) {
     if (!checkParameter(line, "Cols", cols)) return false;
     battery = maxBattery;
 
-    int index = 0;
     bool firstOrLast = false;
     std::vector<char> row;
     while (std::getline(file, line)) {
@@ -54,24 +55,21 @@ bool House::loadFromFile(const std::string& file_path) {
     addWalls();
     
     // Find the docking station and update totalDirt
+    totalDirt = -1;
     bool found_docking = false;
     for (int y = 0; y < static_cast<int>(layout.size()); ++y) {
         for (int x = 0; x < static_cast<int>(layout[y].size()); ++x) {
             if (layout[y][x] == 'D') {
                 found_docking = true;
-                //DockingStation = Coordinates(x,y); 
-                docking_x = x;
-                docking_y = y;
-                curr_x = docking_x;
-                curr_y = docking_y;
-                break;
+                DockingStation = Coordinates(x,y); 
+                CurrLocation = Coordinates(x,y);
             }
-        }
-        if(found_docking){
-            break;
+            if (layout[y][x] > '0' && layout[y][x] <= '9') {
+                totalDirt += layout[y][x] - '0';
+            }
+            
         }
     }
-    
     /*/ Debugging prints
     std::cout << "fileName = " << fileName << std::endl;
     std::cout << "MaxSteps = " << maxSteps << std::endl;
@@ -198,27 +196,22 @@ int House::getCols() const{
     return cols;
 }
 
-int House::getXDocking() const{
-    return docking_x;
+Coordinates House::getDockingCoordinates() const{
+    return DockingStation;
 }
 
-int House::getYDocking() const{
-    return docking_y;
+Coordinates House::getCurrLocation() const {
+    return CurrLocation;
 }
 
-int House::getCurrX() const{
-    return curr_x;
+char House::getLayoutVal(int x, int y) const {
+    return layout[y][x];
 }
-
-int House::getCurrY() const{
-    return curr_y;
-}
-
 
 
 // print function - Debugging
 void House::printDocking() {
-    std::cout << "Docking Station: Layout[" << docking_x << "][" << docking_y << "]" << std::endl;
+    std::cout << "Docking Station: Layout[" << DockingStation.getX() << "][" << DockingStation.getY() << "]" << std::endl;
 }
 
 void House::printline(std::vector<char> line) {
@@ -278,6 +271,3 @@ void House::printTwoLayout(const std::vector<std::vector<char>> originalLayout) 
 }
 
 
-
-
-#endif // SENSORS_H

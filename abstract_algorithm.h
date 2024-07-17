@@ -2,6 +2,7 @@
 #define ROBOT_ALGORITHM_H__
 
 #include <cstddef>
+
 #include "enums.h"
 #include "battery_meter.h"
 #include "wall_sensor.h"

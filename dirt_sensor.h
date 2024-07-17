@@ -3,13 +3,20 @@
 
 #include "House.h"
 #include "enums.h"
-#include "dirt_sensor.h"
+#include "Coordinates.h"
 
 
 class DirtSensor {
-public:
-	virtual ~DirtSensor() {}
-	virtual int dirtLevel() const = 0;
+	
+	private:
+		const House* house;
+
+	public:
+		DirtSensor(const House* house);
+		virtual ~DirtSensor() {}
+		virtual int dirtLevel() const;
+		//virtual int dirtLevel() const = 0;
+
 };
 
 #endif  // DIRT_SENSOR_H_

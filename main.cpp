@@ -1,10 +1,11 @@
+//#include "MySimulator.h"
 #include "House.h"
 #include "enums.h"
-/*/#include "battery_meter.h"
+#include "battery_meter.h"
 #include "Coordinates.h"
 #include "dirt_sensor.h"
-#include "MyAlgorithm.h"
-/**/
+#include "Algorithm.h"
+#include "Coordinates.h"
 #include <iostream>
 #include <string>
 
@@ -44,10 +45,7 @@ void house_layout_test(){
 
 
 
-
-
-
-
+// main for Debbuging
 int main() {
     
     house_layout_test();
@@ -55,4 +53,17 @@ int main() {
    
     return 0;
 }
+/**/
 
+
+
+/*/ getting command line arguments for the house file
+int main(int argc, char** argv) {
+    MySimulator simulator;
+    // TODO: get houseFilePath from command line
+    simulator.readHouseFile(houseFilePath);
+    MyAlgorithm algo;
+    simulator.setAlgorithm(algo);
+    simulator.run();
+}
+/**/
