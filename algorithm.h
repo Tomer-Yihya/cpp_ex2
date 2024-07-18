@@ -3,25 +3,35 @@
 
 #include "abstract_algorithm.h"
 #include "House.h"
-//#include "Robot.h"
+#include "vacuumCleaner.h"
 #include "battery_meter.h"
 #include "wall_sensor.h"
 #include "dirt_sensor.h"
 #include "enums.h"
 #include <vector>
 #include <string>
+#include "Coordinates.h"
+#include <stack>
 
 
 class Algorithm : public AbstractAlgorithm {
     
     private:
-        //Robot robot;
-        const House *house;
-        std::size_t maxSteps;
+        const House* house;
+        const VacuumCleaner* robot;
         const WallsSensor* wallSensor;
         const DirtSensor* dirtSensor;
         const BatteryMeter* batteryMeter;
-        
+        int remainedSteps;
+        int totalDirt;
+        std::size_t maxSteps;
+
+        std::vector<std::string> actions = {"MOVE", "CLEAN", "CHARGE", "FINISH"};
+        bool isCargging = false;
+        bool isReturningToDocking = false;
+        int moveCounter = 0;
+        std::stack<Direction> pathToDocking; // LIFO queue.
+            
     
     public:
         Algorithm();
@@ -32,9 +42,36 @@ class Algorithm : public AbstractAlgorithm {
         void setBatteryMeter(const BatteryMeter& meter) override;
         Step nextStep() override;
 
-        void initAlgo(const House& house);
+
+        void  initAlgo(House& house, VacuumCleaner& robot, WallsSensor& wallSensor, 
+                  DirtSensor& dirtSensor, BatteryMeter& batteryMeter);
+        
+        int minDistanceToDockingStation();
+
+        Coordinates getCurrLocation() const;
+        int getRemainedSteps();
+        int getToatalDirt();
+
+        bool isAtDocking() const;
+        bool isCharged() const;
+        void decreaseRemainedSteps();
+
+
+
+
+        std::string chooseAction();
+        Direction chooseDirection();
+        void emptyQueue();
+        void printQueue();
+        int getQueueSize();
 
 };
+
+
+
+
+
+
 
 
 

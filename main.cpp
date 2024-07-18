@@ -1,4 +1,4 @@
-//#include "MySimulator.h"
+#include "MySimulator.h"
 #include "House.h"
 #include "enums.h"
 #include "battery_meter.h"
@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 
+
 void layout_test (std::string file_name){
     
     std::cout << std::endl;
@@ -16,17 +17,18 @@ void layout_test (std::string file_name){
     std::string file_path = folder_path;
     file_path += file_name;
 
-    House house;
+    //House house;
     //std::cout << "Testing: " << file_name << std::endl;
     try {
-        house.loadFromFile(file_path);
+        House house(file_path);
+        //House house.loadFromFile(file_path);
     } 
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return;
     }
     //house.printLayout(); // Add this to print the layout and verify
-    std::cout << std::endl;
+    //std::cout << std::endl;
 }
 
 void house_layout_test(){
@@ -48,9 +50,19 @@ void house_layout_test(){
 // main for Debbuging
 int main() {
     
-    house_layout_test();
+    std::string file_name = "input.txt";
+    std::cout << std::endl;
+    std::string folder_path = "C:\\Users\\Admin\\Desktop\\ex1_C++\\Cpp_ex2\\inputs\\";
+    std::string houseFilePath = folder_path;
+    houseFilePath += file_name;
     
-   
+    House house(houseFilePath);
+    Algorithm algo;
+    MySimulator simulator;
+    simulator.readHouseFile(houseFilePath);
+    simulator.setAlgorithm(algo);
+    simulator.run();
+
     return 0;
 }
 /**/
@@ -67,3 +79,5 @@ int main(int argc, char** argv) {
     simulator.run();
 }
 /**/
+
+

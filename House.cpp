@@ -5,7 +5,10 @@
 #include <sstream>
 #include <algorithm>
 
-// construnctor
+
+// construnctors
+House::House() : maxSteps(0), maxBattery(0), battery(0), rows(0), cols(0), totalDirt(0) {}
+
 House::House(const std::string& file_path) { 
     try {
         if (!loadFromFile(file_path)) {
@@ -17,7 +20,6 @@ House::House(const std::string& file_path) {
     } 
 }
 
-
 bool House::loadFromFile(const std::string& file_path) {
     
     std::ifstream file(file_path);
@@ -25,7 +27,6 @@ bool House::loadFromFile(const std::string& file_path) {
         return false;
     }
     std::string line;
-    //std::vector<char> row = std::vector<char>(line.begin(), line.end());
     if (std::getline(file, line)) fileName = line;
     std::getline(file, line); 
     if (!checkParameter(line, "MaxSteps", maxSteps)) return false;
@@ -61,8 +62,7 @@ bool House::loadFromFile(const std::string& file_path) {
         for (int x = 0; x < static_cast<int>(layout[y].size()); ++x) {
             if (layout[y][x] == 'D') {
                 found_docking = true;
-                DockingStation = Coordinates(x,y); 
-                CurrLocation = Coordinates(x,y);
+                DockingStation = Coordinates(x,y);
             }
             if (layout[y][x] > '0' && layout[y][x] <= '9') {
                 totalDirt += layout[y][x] - '0';
@@ -89,7 +89,6 @@ bool House::loadFromFile(const std::string& file_path) {
     file.close();
     return true;
 }
-
 
 // helping functions
 bool House::checkParameter(const std::string line, const std::string paramName, int& param) {
@@ -196,17 +195,24 @@ int House::getCols() const{
     return cols;
 }
 
-Coordinates House::getDockingCoordinates() const{
-    return DockingStation;
+int House::getTotalDirt() const {
+    return totalDirt;
 }
 
-Coordinates House::getCurrLocation() const {
-    return CurrLocation;
+Coordinates House::getDockingCoordinates() const{
+    return DockingStation;
 }
 
 char House::getLayoutVal(int x, int y) const {
     return layout[y][x];
 }
+
+
+// Update layout functions
+void House::decreseDirtLevel(int x, int y) {
+    layout[y][x]--;
+}
+
 
 
 // print function - Debugging

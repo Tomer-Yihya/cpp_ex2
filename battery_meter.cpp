@@ -3,7 +3,8 @@
 
 BatteryMeter::BatteryMeter(const House* house) : house(house) {}
 
+
 std::size_t BatteryMeter::getBatteryState() const {
     int res = house->getBattery();
-    return (size_t)res;
+    return static_cast<std::size_t>(res);
 }

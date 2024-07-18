@@ -2,20 +2,21 @@
 #define WALL_SENSOR_H_
 
 #include "House.h"
+#include "VacuumCleaner.h"
 #include "enums.h"
-#include "Coordinates.h"
 
 
 class WallsSensor {
 	
 	private:
 		const House* house;
+		const VacuumCleaner* robot;
 
-	
 	public:
-    	WallsSensor(const House* house);
+    	WallsSensor(const House* house, const VacuumCleaner* robot);
 		virtual ~WallsSensor() {}
-		virtual bool isWall(Direction d) const = 0;
+		virtual bool isWall(Direction d) const;
+		//virtual bool isWall(Direction d) const = 0;
 
 };
 

@@ -20,7 +20,6 @@ class House {
         int cols;
         int totalDirt;
         Coordinates DockingStation;
-        Coordinates CurrLocation;
         std::vector<std::vector<char>> layout;
 
         // helping functions
@@ -33,6 +32,7 @@ class House {
     public:
 
         // construnctor
+        House ();
         House (const std::string& file_path);
         
         // functions
@@ -45,9 +45,13 @@ class House {
         int getBattery() const;
         int getRows() const;
         int getCols() const;
+        int getTotalDirt() const;
         Coordinates getDockingCoordinates() const;
-        Coordinates getCurrLocation() const;
         char getLayoutVal(int x, int y) const;
+
+        // Update layout functions
+        void decreseDirtLevel(int x, int y);
+
         
         // print function - Debugging
         void printDocking();

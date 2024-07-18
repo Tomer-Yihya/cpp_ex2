@@ -14,6 +14,7 @@
                 "battery_meter.cpp",
                 "dirt_sensor.cpp",
                 "wall_sensor.cpp",
+                "vacuumCleaner.cpp",
                 "main.cpp",
                 "-o",
                 "Cpp_ex2.exe"
@@ -22,8 +23,7 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": ["$gcc"],
-            "detail": "Generated task by the system."
+            "problemMatcher": ["$gcc"]
         }
     ]
 }
