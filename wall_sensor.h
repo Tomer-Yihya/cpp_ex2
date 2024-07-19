@@ -12,13 +12,16 @@ class WallsSensor {
 		const House* house;
 		const VacuumCleaner* robot;
 
+
 	public:
     	WallsSensor(const House* house, const VacuumCleaner* robot);
 		virtual ~WallsSensor() {}
 		virtual bool isWall(Direction d) const;
+		
 		//virtual bool isWall(Direction d) const = 0;
 
 };
+
 
 #endif  // WALL_SENSOR_H_
 

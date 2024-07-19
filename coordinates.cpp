@@ -22,6 +22,20 @@ Coordinates Coordinates::getCoordinatesW() const{
     return Coordinates(xValue-1, yValue);
 }
 
+void Coordinates::setX(const int x) {
+    xValue = x;
+}
+
+void Coordinates::setY(const int y) {
+    yValue = y;
+}
+
+void Coordinates::setCoordinates(const Coordinates& coor) {
+    xValue = coor.getX();
+    yValue = coor.getY();
+}
+
+
 
 // equality operator
 bool Coordinates::operator==(const Coordinates& other) const {

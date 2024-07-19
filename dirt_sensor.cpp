@@ -1,5 +1,6 @@
 #include "dirt_sensor.h"
 
+
 DirtSensor::DirtSensor(const House* house, const VacuumCleaner* robot) : house(house), robot(robot) {}
 
 int DirtSensor::dirtLevel() const {
@@ -10,6 +11,7 @@ int DirtSensor::dirtLevel() const {
 	if(c >='0' && c <='9') {
 		res += c - '0';
 	}
+
 	return res;
 }
 

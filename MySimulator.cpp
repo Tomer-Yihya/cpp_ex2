@@ -1,7 +1,11 @@
 #include "MySimulator.h"
 #include <iostream>
 
-MySimulator::MySimulator() : algorithm(nullptr), robot(&house), wallSensor(&house, &robot), dirtSensor(&house, &robot), batteryMeter(&house) {}
+
+MySimulator::MySimulator() :
+    algorithm(nullptr), robot(&house), wallSensor(&house, &robot), 
+    dirtSensor(&house, &robot), batteryMeter(house.getBatteryCapacity())
+{}
 
 
 bool MySimulator::readHouseFile(const std::string& houseFilePath) {
@@ -14,7 +18,7 @@ void MySimulator::setAlgorithm(Algorithm& algo) {
     robot = VacuumCleaner(&house);
     wallSensor = WallsSensor(&house, &robot);
     dirtSensor = DirtSensor(&house, &robot);
-    batteryMeter = BatteryMeter(&house);
+    batteryMeter = BatteryMeter(house.getBatteryCapacity());
 
     algorithm->initAlgo(house, robot, wallSensor, dirtSensor, batteryMeter);
 }
@@ -22,11 +26,10 @@ void MySimulator::setAlgorithm(Algorithm& algo) {
 
 void MySimulator::run() {
     while (algorithm->getRemainedSteps() > 0 && robot.getBatteryLevel() > 0) {
-        //std::cout << "\n" << std::endl;
-        printLocation();
-        printLayout();
-        std::cout << "\n" << std::endl;
-
+        
+        // for Debugging
+        printStepStatus();
+        
         std::string action = algorithm->chooseAction();
 
         if (action == "MOVE") {
@@ -35,6 +38,7 @@ void MySimulator::run() {
         } 
         else if (action == "CLEAN") {
             robot.clean();
+            algorithm->decreaseTotalDirt();
         } 
         else if (action == "CHARGE") {
             robot.charge();
@@ -65,4 +69,12 @@ void MySimulator::printLayout() {
 }
 
 
+void MySimulator::printStepStatus() {
+    printLocation();
+            std::cout << "remainedSteps = " << algorithm->getRemainedSteps() << std::endl;
+            std::cout << "totalDirt = " << algorithm->getToatalDirt() << std::endl;
+            std::cout << "battery = " << robot.getBatteryLevel() << std::endl;
+            printLayout();
+            std::cout << "\n" << std::endl;
 
+}

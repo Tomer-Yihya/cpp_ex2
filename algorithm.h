@@ -1,6 +1,9 @@
 #ifndef ALGORITHM_H
 #define ALGORITHM_H
 
+#include <vector>
+#include <string>
+#include <stack>
 #include "abstract_algorithm.h"
 #include "House.h"
 #include "vacuumCleaner.h"
@@ -8,10 +11,7 @@
 #include "wall_sensor.h"
 #include "dirt_sensor.h"
 #include "enums.h"
-#include <vector>
-#include <string>
 #include "Coordinates.h"
-#include <stack>
 
 
 class Algorithm : public AbstractAlgorithm {
@@ -31,7 +31,6 @@ class Algorithm : public AbstractAlgorithm {
         bool isReturningToDocking = false;
         int moveCounter = 0;
         std::stack<Direction> pathToDocking; // LIFO queue.
-            
     
     public:
         Algorithm();
@@ -55,24 +54,15 @@ class Algorithm : public AbstractAlgorithm {
         bool isAtDocking() const;
         bool isCharged() const;
         void decreaseRemainedSteps();
-
-
-
+        void decreaseTotalDirt();
 
         std::string chooseAction();
         Direction chooseDirection();
+        bool nextStepDirty(Direction d);
         void emptyQueue();
         void printQueue();
         int getQueueSize();
 
 };
-
-
-
-
-
-
-
-
 
 #endif // ALGORITHM_H

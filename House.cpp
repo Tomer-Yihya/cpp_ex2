@@ -7,7 +7,7 @@
 
 
 // construnctors
-House::House() : maxSteps(0), maxBattery(0), battery(0), rows(0), cols(0), totalDirt(0) {}
+House::House() : maxSteps(0), maxBattery(0), rows(0), cols(0), totalDirt(0) {}
 
 House::House(const std::string& file_path) { 
     try {
@@ -36,7 +36,6 @@ bool House::loadFromFile(const std::string& file_path) {
     if (!checkParameter(line, "Rows", rows)) return false;
     std::getline(file, line); 
     if (!checkParameter(line, "Cols", cols)) return false;
-    battery = maxBattery;
 
     bool firstOrLast = false;
     std::vector<char> row;
@@ -183,10 +182,6 @@ int House::getBatteryCapacity() const{
     return maxBattery;
 }
 
-int House::getBattery() const{
-    return maxBattery;
-}
-
 int House::getRows() const{
     return rows;
 }
@@ -210,7 +205,10 @@ char House::getLayoutVal(int x, int y) const {
 
 // Update layout functions
 void House::decreseDirtLevel(int x, int y) {
-    layout[y][x]--;
+    layout[x][y]--;
+    if(layout[x][y] == '0') {
+        layout[x][y] = ' ';
+    }
 }
 
 

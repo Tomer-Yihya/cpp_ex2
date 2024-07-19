@@ -15,7 +15,6 @@ class House {
         std::string fileName;
         int maxSteps;
         int maxBattery;
-        int battery;
         int rows;
         int cols;
         int totalDirt;
@@ -42,7 +41,6 @@ class House {
         std::vector<std::vector<char>> getLayout() const;
         int getMaxStepsAllowed() const;
         int getBatteryCapacity() const;
-        int getBattery() const;
         int getRows() const;
         int getCols() const;
         int getTotalDirt() const;

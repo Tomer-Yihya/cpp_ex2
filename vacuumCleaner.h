@@ -5,15 +5,15 @@
 #include "enums.h"
 #include "Coordinates.h"
 #include <vector>
+#include "battery_meter.h"
 
 
 
 class VacuumCleaner {
     private:
         House* house;
-        int battery;
-        int batteryCapacity;
         Coordinates currentLocation;
+        BatteryMeter battery;
 
     public:
         // constructor
@@ -24,11 +24,13 @@ class VacuumCleaner {
         void move(Direction d);
         void clean();
         bool spotIsDirty(char ch);
+        bool isCharged() const;
 
         // getters
         int getBatteryLevel() const;
-        int getBatteryCapacity() const;
         Coordinates getCurrentLocation() const;
+        //void setCurrentLocation(int x, int y);
+        //void setCurrentLocation(const Coordinates& coor);
 };
 
 #endif

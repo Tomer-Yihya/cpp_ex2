@@ -13,6 +13,7 @@ class DirtSensor {
 		const House* house;
 		const VacuumCleaner* robot;
 
+
 	public:
 		DirtSensor(const House* house, const VacuumCleaner* robot);
 		virtual ~DirtSensor() {}
@@ -20,5 +21,6 @@ class DirtSensor {
 		//virtual int dirtLevel() const = 0;
 
 };
+
 
 #endif  // DIRT_SENSOR_H_

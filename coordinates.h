@@ -20,6 +20,10 @@ class Coordinates
         Coordinates getCoordinatesS() const;
         Coordinates getCoordinatesW() const;
 
+        void setX(const int x);
+        void setY(const int y);
+        void setCoordinates(const Coordinates& coor);
+
         // equality operator
         bool operator==(const Coordinates& other) const;
 };

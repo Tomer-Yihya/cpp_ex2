@@ -141,13 +141,16 @@ bool Algorithm::isAtDocking() const {
 }
 
 bool Algorithm::isCharged() const{
-    return robot->getBatteryLevel() == robot->getBatteryCapacity();
+    return robot->isCharged();
 }
 
 void Algorithm::decreaseRemainedSteps() {
     remainedSteps--;
 }
 
+void Algorithm::decreaseTotalDirt(){
+    totalDirt--;
+}
 
 // from ex1
 
@@ -233,8 +236,16 @@ Direction Algorithm::chooseDirection() {
     }
 
     // Choose a random direction from the possible directions
-    int randomIndex = ((totalDirt + 19) % possibleDirections.size());
-    Direction direction = possibleDirections[randomIndex];
+    //int randomIndex = ((totalDirt + 19) % possibleDirections.size());
+    //Direction direction = possibleDirections[randomIndex];
+    
+    Direction direction;
+    for(int i = 0; i < possibleDirections.size(); i++ ){
+        direction = possibleDirections[i];
+        if(nextStepDirty(direction)){
+            break;
+        } 
+    }
 
     // Enter the opposite direction to the direction of progress to know how to return
     switch (direction) {
@@ -252,6 +263,29 @@ Direction Algorithm::chooseDirection() {
             break;
     }    
     return direction;
+}
+
+
+bool Algorithm::nextStepDirty(Direction d) {
+    Coordinates temp = robot->getCurrentLocation();
+    int x = temp.getX();
+    int y = temp.getY();
+    char c = '0';
+    switch (d) {
+        case Direction::North:
+            c = house->getLayoutVal(x,y-1);
+            break;
+        case Direction::South:
+            c = house->getLayoutVal(x,y+1);
+            break;
+        case Direction::West:
+            c = house->getLayoutVal(x-1,y);
+            break;
+        case Direction::East:
+            c = house->getLayoutVal(x+1,y);
+            break;
+    }
+    return (c > '0' && c <= '9' && c != 'D' && c != ' ');
 }
 
 

@@ -33,6 +33,7 @@ class MySimulator {
         // print function - Debugging
         void printLocation();
         void printLayout();
+        void printStepStatus();
 };
 
 #endif // MYSIMULATOR_H

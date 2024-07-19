@@ -1,10 +1,37 @@
 #include "battery_meter.h"
 
-
-BatteryMeter::BatteryMeter(const House* house) : house(house) {}
-
+BatteryMeter::BatteryMeter(int batteryCapacity) : batteryCapacity(batteryCapacity), battery(batteryCapacity)
+{}
 
 std::size_t BatteryMeter::getBatteryState() const {
-    int res = house->getBattery();
-    return static_cast<std::size_t>(res);
+    return static_cast<std::size_t>(battery);
+}
+
+void BatteryMeter::increaseBattery() {
+    if (battery < batteryCapacity) {
+        battery += batteryCapacity / 20;
+        // edge case
+        if (battery > batteryCapacity) {
+            battery = batteryCapacity;
+        }
+    }
+}
+
+void BatteryMeter::decreaseBattery() {
+    battery--;
+}
+
+bool BatteryMeter::isCharged() const {
+    return battery == batteryCapacity;
+}
+
+void BatteryMeter::charge() {
+    if (battery < batteryCapacity) {
+        battery += batteryCapacity / 20;
+
+        // edge case
+        if (battery > batteryCapacity) {
+            battery = batteryCapacity;
+        }
+    }
 }

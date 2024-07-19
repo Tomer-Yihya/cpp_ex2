@@ -5,7 +5,9 @@ WallsSensor::WallsSensor(const House* house, const VacuumCleaner* robot) : house
 
 
 bool WallsSensor::isWall(Direction d) const {
+    
     Coordinates temp = robot->getCurrentLocation();
+    
     switch (d) {
         case Direction::North:
             temp = temp.getCoordinatesN();  // Coordinates(x,y-1)
@@ -20,6 +22,7 @@ bool WallsSensor::isWall(Direction d) const {
             temp = temp.getCoordinatesW();  // Coordinates(x-1,y)
             break;
     }
+    
     bool res = house->getLayoutVal(temp.getX(), temp.getY()) == 'W';
 	return res;
 }

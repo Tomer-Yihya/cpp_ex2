@@ -2,28 +2,20 @@
 
 
 // constructor
-VacuumCleaner::VacuumCleaner(House* house) {
-    this->house = house;
-    battery = house->getBattery(); 
-    batteryCapacity = house->getBatteryCapacity();
-    currentLocation = house->getDockingCoordinates();
+VacuumCleaner::VacuumCleaner(House* house) : 
+    house(house), 
+    currentLocation(house->getDockingCoordinates()), 
+    battery(house->getBatteryCapacity()) {
 }
 
 
 void VacuumCleaner::charge() {
-    if (battery < batteryCapacity) {
-        battery += batteryCapacity / 20;
-        
-        // edge case
-        if (battery > batteryCapacity) {
-            battery = batteryCapacity;
-        }
-    }
+    battery.charge();
 }
 
 
 void VacuumCleaner::move(Direction d) {
-    if (battery <= 0) { return; }
+    if (battery.getBatteryState() <= 0) { return; }
 
     switch (d) {
         case Direction::North:
@@ -39,13 +31,13 @@ void VacuumCleaner::move(Direction d) {
             currentLocation = currentLocation.getCoordinatesW();
             break;
     }
-    battery--;
+    battery.decreaseBattery();
 }
 
 
 void VacuumCleaner::clean() {
     house->decreseDirtLevel(currentLocation.getY(),currentLocation.getX());
-    battery--;
+    battery.decreaseBattery();
 }
 
 
@@ -55,13 +47,14 @@ bool VacuumCleaner::spotIsDirty(char ch) {
 }
 
 
-int VacuumCleaner::getBatteryLevel() const {
-    return battery;
+bool VacuumCleaner::isCharged() const
+{
+    return battery.isCharged();
 }
 
 
-int VacuumCleaner::getBatteryCapacity() const {
-    return batteryCapacity;
+int VacuumCleaner::getBatteryLevel() const {
+    return battery.getBatteryState();
 }
 
 
@@ -69,3 +62,15 @@ Coordinates VacuumCleaner::getCurrentLocation() const {
     return currentLocation;
 }
 
+/*/
+void VacuumCleaner::setCurrentLocation(int x, int y) {
+    currentLocation.setX(x);
+    currentLocation.setY(y);
+}
+
+
+void VacuumCleaner::setCurrentLocation(const Coordinates& coor) {
+    currentLocation.setX(coor.getX());
+    currentLocation.setY(coor.getY());
+}
+/**/
