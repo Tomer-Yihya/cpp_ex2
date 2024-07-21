@@ -62,6 +62,7 @@ int main() {
     simulator.readHouseFile(houseFilePath);
     simulator.setAlgorithm(algo);
     simulator.run();
+    simulator.writeOutput(folder_path);
 
     return 0;
 }

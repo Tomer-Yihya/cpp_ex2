@@ -12,6 +12,8 @@
 #include <vector>
 #include <string>
 #include "Coordinates.h"
+#include <iostream>
+#include <fstream>
 
 
 
@@ -23,6 +25,10 @@ class MySimulator {
         WallsSensor wallSensor;
         DirtSensor dirtSensor; 
         BatteryMeter batteryMeter;
+        const std::string outputFilePath;
+        std::vector<Step> stepsLog;
+        enum Status { FINISHED, WORKING, DEAD };
+        Status status = WORKING;
 
     public:
         MySimulator();
@@ -34,6 +40,9 @@ class MySimulator {
         void printLocation();
         void printLayout();
         void printStepStatus();
+
+
+        void writeOutput(std::string outputFilePath) const;
 };
 
 #endif // MYSIMULATOR_H

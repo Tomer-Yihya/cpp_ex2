@@ -31,20 +31,27 @@ void MySimulator::run() {
         printStepStatus();
         
         std::string action = algorithm->chooseAction();
+        Step step;
 
         if (action == "MOVE") {
-            Direction direction = algorithm->chooseDirection();
+            //Step step = algorithm->chooseDirection();
+            step = algorithm->nextStep();
+            stepsLog.push_back(step);
+            Direction direction = algorithm->convertStepToDirection(step);
             robot.move(direction);
         } 
         else if (action == "CLEAN") {
             robot.clean();
+            stepsLog.push_back(Step::Stay);
             algorithm->decreaseTotalDirt();
         } 
         else if (action == "CHARGE") {
             robot.charge();
+            stepsLog.push_back(Step::Stay);
         } 
         else if (action == "FINISH") {
-            break;
+            stepsLog.push_back(Step::Finish);
+            return;
         }
 
         algorithm->decreaseRemainedSteps();
@@ -77,4 +84,42 @@ void MySimulator::printStepStatus() {
             printLayout();
             std::cout << "\n" << std::endl;
 
+}
+
+// write the output file
+void MySimulator::writeOutput(std::string outputFilePath) const {
+    outputFilePath +=  "output.txt";
+    std::ofstream outFile(outputFilePath);
+    if (!outFile) {
+        std::cerr << "Error opening output file." << std::endl;
+        return;
+    }
+    
+    int totalSteps = house.getMaxStepsAllowed() - algorithm->getRemainedSteps();
+    int remainedDirt = algorithm->getToatalDirt();
+
+
+    outFile << "NumSteps = " << totalSteps << std::endl;
+    outFile << "DirtLeft = " << remainedDirt << std::endl;
+    switch (status) {
+        case Status::FINISHED:
+            outFile << "Status = FINISHED" << std::endl;
+            break;
+        case Status::WORKING:
+            outFile << "Status = WORKING" << std::endl;
+            break;
+        case Status::DEAD:
+            outFile << "Status = DEAD" << std::endl;
+            break;
+    }
+
+    // add a print of the steps list
+    char c;
+    for(Step s : stepsLog) {
+        c = algorithm->convertStepToChar(s);
+        outFile << c;
+    }
+    outFile << std::endl;
+
+    outFile.close();
 }

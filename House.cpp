@@ -55,7 +55,7 @@ bool House::loadFromFile(const std::string& file_path) {
     addWalls();
     
     // Find the docking station and update totalDirt
-    totalDirt = -1;
+    totalDirt = 0;
     bool found_docking = false;
     for (int y = 0; y < static_cast<int>(layout.size()); ++y) {
         for (int x = 0; x < static_cast<int>(layout[y].size()); ++x) {
@@ -65,8 +65,7 @@ bool House::loadFromFile(const std::string& file_path) {
             }
             if (layout[y][x] > '0' && layout[y][x] <= '9') {
                 totalDirt += layout[y][x] - '0';
-            }
-            
+            }    
         }
     }
     /*/ Debugging prints

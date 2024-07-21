@@ -9,8 +9,8 @@ Algorithm::~Algorithm() {}
 
 
 Algorithm::Algorithm() : house(nullptr), robot(nullptr), wallSensor(nullptr), dirtSensor(nullptr), 
-                        batteryMeter(nullptr), remainedSteps(0), totalDirt(0), maxSteps(0) {}
-
+                        batteryMeter(nullptr), remainedSteps(0), totalDirt(0), maxSteps(0) 
+{}
 
 
 void Algorithm::setMaxSteps(std::size_t maxSteps) {
@@ -31,9 +31,70 @@ void Algorithm::setBatteryMeter(const BatteryMeter& meter) {
 
 Step Algorithm::nextStep() {
     
-    int dis = minDistanceToDockingStation();
-    std::cout << "distance from docking station = " << dis << std::endl;
-    return Step::North;
+    Step step;
+    // the house is clean
+    if(totalDirt == 0) {
+        isReturningToDocking = true;
+        if(isAtDocking()){
+            stepsList.push_back('F');
+            return Step::Finish; // FINISH
+        }
+        step = chooseDirection(); 
+        stepsList.push_back(convertStepToChar(step));
+        return step; // MOVE
+    }
+
+    //int dist_from_docking = minDistanceToDockingStation();
+    int dist_from_docking = pathToDocking.size();
+    
+    if(isAtDocking()){
+        // if the robot finish charging
+        if(isCharged()) {
+            isCargging = false;
+            isReturningToDocking = false;
+            return chooseDirection(); // MOVE
+        }
+        // if the robot is charging or has returned to docking station to charge
+        if(isCargging || robot->getBatteryLevel() == 1 || robot->getBatteryLevel() == 2) {
+            isCargging = true;
+            return Step::Stay; // CHARGE
+        }
+        // There is still some battery left, so you don't have to charge it
+        if(robot->getBatteryLevel() > dist_from_docking + 2){
+            step = chooseDirection(); 
+            stepsList.push_back(convertStepToChar(step));
+            return step; // MOVE
+        }
+        // There is very little battery left so charge now
+        else {
+            isCargging = true;
+            return Step::Stay; // CHARGE
+        }
+    }
+
+    // if the distance from the charging station is equal to the remaining battery + 1 or 2 steps - go charge
+    else if((robot->getBatteryLevel() == dist_from_docking + 2) || 
+            (robot->getBatteryLevel() == dist_from_docking + 1)) {
+        isReturningToDocking = true;
+        step = chooseDirection(); 
+        stepsList.push_back(convertStepToChar(step));
+        return step; // MOVE    
+    }
+    // no need to charge right now
+    else { 
+        // still dirty - keep cleaning
+        if(dirtSensor->dirtLevel() > 0) {
+            return Step::Stay; // CLEAN
+        }
+        // this spot is clean - move
+        else { 
+            step = chooseDirection(); 
+            stepsList.push_back(convertStepToChar(step));
+            return step; // MOVE      
+        }
+    }
+
+
 }
 
 void  Algorithm::initAlgo(House& house, VacuumCleaner& robot, WallsSensor& wallSensor, DirtSensor& dirtSensor, BatteryMeter& batteryMeter){
@@ -115,25 +176,6 @@ int Algorithm::getToatalDirt() {
 }
 
 
-/*/ to do
-Direction Algorithm::chooseDirection(){
-    
-    Direction d = Direction::North;
-    
-    switch (d) {
-        case Direction::North:
-            break;
-        case Direction::South:
-            break;
-        case Direction::East:
-            break;
-        case Direction::West:
-            break;
-    }
-
-    return d;
-}
-/**/
 
 
 bool Algorithm::isAtDocking() const {
@@ -152,8 +194,9 @@ void Algorithm::decreaseTotalDirt(){
     totalDirt--;
 }
 
-// from ex1
 
+
+// from ex1
 std::string Algorithm::chooseAction() {
     
     // the house is clean
@@ -165,8 +208,8 @@ std::string Algorithm::chooseAction() {
         return actions[0]; // MOVE
     }
 
-    //int distance_from_docking_station = minDistanceToDockingStation();
-    int distance_from_docking_station = pathToDocking.size();
+    //int dist_from_docking = minDistanceToDockingStation();
+    int dist_from_docking = pathToDocking.size();
     
     if(isAtDocking()){
         // if get to the docking station (even accidentally), reset the route back
@@ -184,7 +227,7 @@ std::string Algorithm::chooseAction() {
             return actions[2]; // CHARGE
         }
         // There is still some battery left, so you don't have to charge it
-        if(robot->getBatteryLevel() > distance_from_docking_station + 2){
+        if(robot->getBatteryLevel() > dist_from_docking + 2){
             return actions[0]; // MOVE
         }
         // There is very little battery left so charge now
@@ -195,8 +238,8 @@ std::string Algorithm::chooseAction() {
     }
 
     // if the distance from the charging station is equal to the remaining battery + 1 or 2 steps - go charge
-    else if((robot->getBatteryLevel() == distance_from_docking_station + 2) || 
-            (robot->getBatteryLevel() == distance_from_docking_station + 1)) {
+    else if((robot->getBatteryLevel() == dist_from_docking + 2) || 
+            (robot->getBatteryLevel() == dist_from_docking + 1)) {
         isReturningToDocking = true;
         return actions[0]; // MOVE    
     }
@@ -214,36 +257,46 @@ std::string Algorithm::chooseAction() {
 }
 
 
-Direction Algorithm::chooseDirection() {
+Step Algorithm::chooseDirection() {
 
     if(isReturningToDocking){ 
         if(!pathToDocking.empty()){
-            Direction dirction = pathToDocking.top();
+            Direction direction = pathToDocking.top();
             pathToDocking.pop(); 
-            return dirction;
+            return convertDirectionToStep(direction);
         } 
     }
     
     std::vector<Direction> possibleDirections;
-    if (!wallSensor->isWall(Direction:: North)) {  possibleDirections.push_back(Direction::North); }
-    if (!wallSensor->isWall(Direction:: South)) {  possibleDirections.push_back(Direction::South); }
-    if (!wallSensor->isWall(Direction:: East))  {  possibleDirections.push_back(Direction::East); }
-    if (!wallSensor->isWall(Direction:: West))  {  possibleDirections.push_back(Direction::West); }
-
-    // No possible directions
+    if (!wallSensor->isWall(Direction:: North)) {  
+        possibleDirections.push_back(Direction::North); 
+    }
+    if (!wallSensor->isWall(Direction:: South)) {  
+        possibleDirections.push_back(Direction::South); 
+    }
+    if (!wallSensor->isWall(Direction:: East))  {  
+        possibleDirections.push_back(Direction::East); 
+    }
+    if (!wallSensor->isWall(Direction:: West))  {  
+        possibleDirections.push_back(Direction::West); 
+    }
+    // No possible directions -> the robot is stuck
     if (possibleDirections.empty()) {
         throw std::runtime_error("The robot is stuck and cannot move in any direction\n"); 
     }
 
-    // Choose a random direction from the possible directions
-    //int randomIndex = ((totalDirt + 19) % possibleDirections.size());
-    //Direction direction = possibleDirections[randomIndex];
-    
-    Direction direction;
+    // Choose a direction where is a dirty spot from the possible directions
+    // if all the direction lead to a clean spot Choose a random direction
+    Direction direction = Direction::North;
     for(int i = 0; i < possibleDirections.size(); i++ ){
         direction = possibleDirections[i];
         if(nextStepDirty(direction)){
             break;
+        }
+        if(i == possibleDirections.size()-1){
+            // Choose a random direction from the possible directions
+            int randomIndex = ((totalDirt + 19) % possibleDirections.size());
+            direction = possibleDirections[randomIndex];
         } 
     }
 
@@ -251,18 +304,71 @@ Direction Algorithm::chooseDirection() {
     switch (direction) {
         case Direction::North:
             pathToDocking.push(Direction::South);
-            break;
+            return Step::North;
         case Direction::South:
             pathToDocking.push(Direction::North);
-            break;
+            return Step::South;
         case Direction::West:
             pathToDocking.push(Direction::East);
-            break;
+            return Step::West;
         case Direction::East:
             pathToDocking.push(Direction::West);
-            break;
-    }    
-    return direction;
+            return Step::East;
+    }
+    return Step::North;
+}
+
+
+Step Algorithm::convertDirectionToStep(Direction d) {
+    switch (d) {
+        case Direction::North:
+            return Step::North;
+        case Direction::South:
+            return Step::South;
+        case Direction::West:
+            return Step::West;
+        case Direction::East:
+            return Step::East;
+        default:
+            return Step::North;
+    }
+}
+
+
+Direction Algorithm::convertStepToDirection(Step s){
+    switch (s) {
+        case Step::North:
+            return Direction::North;
+        case Step::South:
+            return Direction::South;
+        case Step::West:
+            return Direction::West;
+        case Step::East:
+            return Direction::East;
+        default:
+            return Direction::North;
+    }
+}
+
+
+char Algorithm::convertStepToChar(Step s){
+    switch (s) {
+        case Step::North:
+            return 'N';
+        case Step::South:
+            return 'S';
+        case Step::West:
+            return 'W';
+        case Step::East:
+            return 'E';
+        case Step::Stay:
+            return 's';
+        case Step::Finish:
+            return 'F';
+        default:
+            return 's';
+    }
+
 }
 
 
@@ -287,6 +393,10 @@ bool Algorithm::nextStepDirty(Direction d) {
     }
     return (c > '0' && c <= '9' && c != 'D' && c != ' ');
 }
+
+
+
+
 
 
 void Algorithm::emptyQueue(){

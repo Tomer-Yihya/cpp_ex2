@@ -29,8 +29,8 @@ class Algorithm : public AbstractAlgorithm {
         std::vector<std::string> actions = {"MOVE", "CLEAN", "CHARGE", "FINISH"};
         bool isCargging = false;
         bool isReturningToDocking = false;
-        int moveCounter = 0;
         std::stack<Direction> pathToDocking; // LIFO queue.
+        std::vector<char> stepsList; // LIFO queue.
     
     public:
         Algorithm();
@@ -42,8 +42,7 @@ class Algorithm : public AbstractAlgorithm {
         Step nextStep() override;
 
 
-        void  initAlgo(House& house, VacuumCleaner& robot, WallsSensor& wallSensor, 
-                  DirtSensor& dirtSensor, BatteryMeter& batteryMeter);
+        void  initAlgo(House& house, VacuumCleaner& robot, WallsSensor& wallSensor, DirtSensor& dirtSensor, BatteryMeter& batteryMeter);
         
         int minDistanceToDockingStation();
 
@@ -57,12 +56,18 @@ class Algorithm : public AbstractAlgorithm {
         void decreaseTotalDirt();
 
         std::string chooseAction();
-        Direction chooseDirection();
+        Step chooseDirection();
+        Step convertDirectionToStep(Direction d);
+        Direction convertStepToDirection(Step s);
+        char convertStepToChar(Step s);
         bool nextStepDirty(Direction d);
+        
+        
+        
+        
         void emptyQueue();
         void printQueue();
         int getQueueSize();
-
 };
 
 #endif // ALGORITHM_H
