@@ -57,16 +57,18 @@ Step Algorithm::nextStep() {
         return step; // MOVE - to Docking station
     }
     /*/ for Debugging
-    //printPathToDocking();
-    //printPathToDirtySpot();
+    printPathToDocking();
+    printPathToDirtySpot();
     /**/
 
     // if the house is clean OR the battery is low - go to the Docking station
-    if(totalDirt == 0 || isBatteryLow(battery, dist_from_docking, dist_from_dirty_spot)) {
+    if(totalDirt == 0 || isBatteryLow(battery, dist_from_docking, dist_from_dirty_spot) || isCargging) {
         isReturningToDocking = true;
         goToDirtySpot = false; 
     }
-    if(!isBatteryLow(battery, dist_from_docking, dist_from_dirty_spot) && !isAtDocking()) {
+    else {
+    //if(!isBatteryLow(battery, dist_from_docking, dist_from_dirty_spot)) {
+    //if(!isBatteryLow(battery, dist_from_docking, dist_from_dirty_spot) && !isAtDocking()) {
         isReturningToDocking = false;
         goToDirtySpot = true;
     }

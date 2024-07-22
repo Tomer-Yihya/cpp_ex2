@@ -25,11 +25,11 @@ void MySimulator::setAlgorithm(Algorithm& algo) {
 
 
 void MySimulator::run() {
+    
+    // for Debugging
+    printStepStatus();
     while (algorithm->getRemainedSteps() > 0 && robot.getBatteryLevel() > 0) {
-        
-        // for Debugging
-        printStepStatus();
-        
+            
         Step step = algorithm->nextStep();
         
         // Stay/CLEAN
@@ -47,6 +47,7 @@ void MySimulator::run() {
         
         // Finish
         else if (step == Step::Finish) {
+            printStepStatus();
             return;
         }
         
@@ -60,8 +61,7 @@ void MySimulator::run() {
     }
 
     std::cout << "The house Layout after the cleaning of the robot is finished: " << std::endl;
-    printLayout();
-    std::cout << "\n" << std::endl;
+    printStepStatus();
 }
 
 
@@ -69,7 +69,7 @@ void MySimulator::printLocation() {
     Coordinates currentLocation = robot.getCurrentLocation();
     int x = currentLocation.getX();
     int y = currentLocation.getY();
-    std::cout << "currentLocation: layout[" << x << "][" << y << "] = " << (house.getLayoutVal(x, y) == ' ' ? '_' : house.getLayoutVal(x, y)) << "\n";
+    std::cout << "currentLocation: layout[" << x << "][" << y << "] = " << house.getLayoutVal(x, y) << "\n";
 }   
 
 
@@ -80,11 +80,11 @@ void MySimulator::printLayout() {
 
 void MySimulator::printStepStatus() {
     printLocation();
-            std::cout << "remainedSteps = " << algorithm->getRemainedSteps() << std::endl;
-            std::cout << "totalDirt = " << algorithm->getToatalDirt() << std::endl;
-            std::cout << "battery = " << robot.getBatteryLevel() << std::endl;
-            printLayout();
-            std::cout << "\n" << std::endl;
+    std::cout << "remainedSteps = " << algorithm->getRemainedSteps() << std::endl;
+    std::cout << "totalDirt = " << algorithm->getToatalDirt() << std::endl;
+    std::cout << "battery = " << robot.getBatteryLevel() << std::endl;
+    printLayout();
+    std::cout << "\n" << std::endl;
 
 }
 

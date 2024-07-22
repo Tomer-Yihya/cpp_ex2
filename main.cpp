@@ -50,7 +50,7 @@ void house_layout_test(){
 // main for Debbuging
 int main() {
     
-    std::string file_name = "input.txt";
+    std::string file_name = "input2.txt";
     std::cout << std::endl;
     std::string folder_path = "C:\\Users\\Admin\\Desktop\\ex1_C++\\Cpp_ex2\\inputs\\";
     std::string houseFilePath = folder_path;

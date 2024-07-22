@@ -39,7 +39,7 @@ class Algorithm : public AbstractAlgorithm {
         bool robotIsDead = false;          // A flag that signals if the robot is dead
         bool isCargging = false;           // A flag that signals that the robot is chrgging
         bool isReturningToDocking = false; // A flag that signals that the robot is on its way to the Docking station
-        bool goToDirtySpot = false;        // A flag that signals that the robot is on its way to clean
+        bool goToDirtySpot = true;         // A flag that signals that the robot is on its way to clean
         
         //paths between points in the house layout
         std::vector<Direction> pathToDocking;   // steps of the way back to the Docking station.

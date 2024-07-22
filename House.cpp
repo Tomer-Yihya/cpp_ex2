@@ -65,6 +65,9 @@ bool House::loadFromFile(const std::string& file_path) {
             }
             if (layout[y][x] > '0' && layout[y][x] <= '9') {
                 totalDirt += layout[y][x] - '0';
+            }
+            if (layout[y][x] == '0') {
+                layout[y][x] = ' ';
             }    
         }
     }
@@ -272,5 +275,4 @@ void House::printTwoLayout(const std::vector<std::vector<char>> originalLayout) 
         std::cout << std::endl;
     }
 }
-
 
