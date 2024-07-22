@@ -30,29 +30,31 @@ void MySimulator::run() {
         // for Debugging
         printStepStatus();
         
-        std::string action = algorithm->chooseAction();
-        Step step;
-
-        if (action == "MOVE") {
-            //Step step = algorithm->chooseDirection();
-            step = algorithm->nextStep();
-            stepsLog.push_back(step);
+        Step step = algorithm->nextStep();
+        
+        // Stay/CLEAN
+        if(step == Step::Stay) {
+            // CHARGE
+            if (algorithm->isAtDocking()) {
+                robot.charge();
+            } 
+            // CLEAN
+            else {
+                robot.clean();
+                algorithm->decreaseTotalDirt();
+            } 
+        }
+        
+        // Finish
+        else if (step == Step::Finish) {
+            return;
+        }
+        
+        // step  == North/East/South/West
+        else { 
             Direction direction = algorithm->convertStepToDirection(step);
             robot.move(direction);
         } 
-        else if (action == "CLEAN") {
-            robot.clean();
-            stepsLog.push_back(Step::Stay);
-            algorithm->decreaseTotalDirt();
-        } 
-        else if (action == "CHARGE") {
-            robot.charge();
-            stepsLog.push_back(Step::Stay);
-        } 
-        else if (action == "FINISH") {
-            stepsLog.push_back(Step::Finish);
-            return;
-        }
 
         algorithm->decreaseRemainedSteps();
     }

@@ -42,4 +42,9 @@ bool Coordinates::operator==(const Coordinates& other) const {
     return (xValue == other.getX() && yValue == other.getY());
 }
 
-
+bool Coordinates::operator<(const Coordinates& other) const {
+        if (xValue == other.xValue) {
+            return yValue < other.yValue;
+        }
+        return xValue < other.xValue;
+    }

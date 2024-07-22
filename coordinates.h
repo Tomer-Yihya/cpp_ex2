@@ -26,6 +26,7 @@ class Coordinates
 
         // equality operator
         bool operator==(const Coordinates& other) const;
+        bool operator<(const Coordinates& other) const;
 };
 
 #endif 
