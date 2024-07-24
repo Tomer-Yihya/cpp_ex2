@@ -16,6 +16,8 @@
 #include <fstream>
 
 
+enum Status { FINISHED, WORKING, DEAD };
+
 
 class MySimulator {
     private:
@@ -27,7 +29,6 @@ class MySimulator {
         BatteryMeter batteryMeter;
         const std::string outputFilePath;
         std::vector<Step> stepsLog;
-        enum Status { FINISHED, WORKING, DEAD };
         Status status = WORKING;
 
     public:
@@ -36,13 +37,12 @@ class MySimulator {
         void setAlgorithm(Algorithm& algo);
         void run();
 
+        void writeOutput(std::string outputFilePath) const;
+        
         // print function - Debugging
         void printLocation();
         void printLayout();
         void printStepStatus();
-
-
-        void writeOutput(std::string outputFilePath) const;
 };
 
 #endif // MYSIMULATOR_H

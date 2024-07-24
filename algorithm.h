@@ -66,6 +66,8 @@ class Algorithm : public AbstractAlgorithm {
         Coordinates getCurrLocation() const;
         int getRemainedSteps();
         int getToatalDirt();
+        char getCharFromStepsLog(int index);
+        int getStepsLogSize();
         
         void decreaseRemainedSteps();
         void decreaseTotalDirt();
@@ -82,6 +84,7 @@ class Algorithm : public AbstractAlgorithm {
         char convertStepToChar(Step s);
 
         // for Debugging
+        void printStepsLog();
         void printPathToDocking();
         void printPathToDirtySpot();
 };

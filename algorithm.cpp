@@ -56,10 +56,6 @@ Step Algorithm::nextStep() {
         stepsListLog.push_back(convertStepToChar(step));
         return step; // MOVE - to Docking station
     }
-    /*/ for Debugging
-    printPathToDocking();
-    printPathToDirtySpot();
-    /**/
 
     // if the house is clean OR the battery is low - go to the Docking station
     if(totalDirt == 0 || isBatteryLow(battery, dist_from_docking, dist_from_dirty_spot) || isCargging) {
@@ -67,8 +63,6 @@ Step Algorithm::nextStep() {
         goToDirtySpot = false; 
     }
     else {
-    //if(!isBatteryLow(battery, dist_from_docking, dist_from_dirty_spot)) {
-    //if(!isBatteryLow(battery, dist_from_docking, dist_from_dirty_spot) && !isAtDocking()) {
         isReturningToDocking = false;
         goToDirtySpot = true;
     }
@@ -124,109 +118,6 @@ Step Algorithm::nextStep() {
 }
 
 
-
-/*/
-Step Algorithm::nextStep() {
-    
-    Step step;
-    Direction dir;
-    int battery = robot->getBatteryLevel();
-    int dist_from_docking = minDistanceToDockingStation();
-    printPathToDocking();
-    
-    // if the house is clean OR the battery is low - go to the Docking station
-    if(totalDirt == 0 || (battery == dist_from_docking + 2) || (battery == dist_from_docking + 1)) {
-        isReturningToDocking = true;
-        if(totalDirt == 0 && isAtDocking()){
-            stepsListLog.push_back('F');
-            return Step::Finish; // FINISH
-        }
-        step = chooseDirection(); 
-        stepsListLog.push_back(convertStepToChar(step));
-        return step; // MOVE
-    }
-    
-    Coordinates currLocation = robot->getCurrentLocation();
-    char layoutVal = house->getLayoutVal(currLocation.getX(),currLocation.getY());
-
-    // if not on the way to a docking station AND
-    // there is no route to the nearest dirt
-    if(!isReturningToDocking && !goToDirtySpot) {
-        goToDirtySpot = true;
-        theClosestDirtySpot(); // find a route to the nearest dirt 
-    }
-
-    // if the robot is on his way to the closest dirty spot
-    if(goToDirtySpot) {
-        // reached the dirty point
-        //if(dirtSensor->dirtLevel() > 0) {
-        if(layoutVal > '0' && layoutVal < '9') {
-            goToDirtySpot = false;
-            stepsListLog.push_back('s');
-            return Step::Stay; // CLEAN
-        }
-        // on our way to the dirty spot
-        else { 
-            dir = pathToDirtySpot.front();
-            pathToDirtySpot.erase(pathToDirtySpot.begin());
-            step =  convertDirectionToStep(dir); // Move
-            stepsListLog.push_back(convertStepToChar(step));
-            return step;
-        }
-    }
-
-    // if we are at the docking station
-    if(isAtDocking()){
-        // if the robot finish charging
-        if(isCharged()) {
-            isCargging = false;
-            isReturningToDocking = false;
-            step = chooseDirection();
-            stepsListLog.push_back(convertStepToChar(step));
-            return step; // MOVE
-        }
-        // if the robot is charging or has just returned to docking station to charge
-        if(isCargging || robot->getBatteryLevel() == 1 || robot->getBatteryLevel() == 2) {
-            isCargging = true;
-            step = Step::Stay;
-            stepsListLog.push_back(convertStepToChar(step));
-            return step; // CHARGE
-        }
-        // if the robot passed the docking station on the way to the next point
-        if(robot->getBatteryLevel() > dist_from_docking + 2){
-            step = chooseDirection(); 
-            stepsListLog.push_back(convertStepToChar(step));
-            return step; // MOVE
-        }
-        // There is very little battery left so charge now
-        else {
-            isCargging = true;
-            step = Step::Stay;
-            stepsListLog.push_back(convertStepToChar(step));
-            return step; // CHARGE
-        }
-    }
-
-    // no need to charge right now - keep cleaning
-    else { 
-        // still dirty - keep cleaning
-        if(dirtSensor->dirtLevel() > 0) {
-            step = Step::Stay;
-            stepsListLog.push_back(convertStepToChar(step));
-            return step; // CLEAN
-        }
-        // this spot is clean - move
-        else { 
-            step = chooseDirection(); 
-            stepsListLog.push_back(convertStepToChar(step));
-            return step; // MOVE      
-        }
-    }
-}
-/**/
-
-
-
 void  Algorithm::initAlgo(House& house, VacuumCleaner& robot, WallsSensor& wallSensor, DirtSensor& dirtSensor, BatteryMeter& batteryMeter){
     
     this->house = &house; 
@@ -271,22 +162,19 @@ int Algorithm::minDistanceToDockingStation() {
     std::vector<std::pair<int, int>> directions = { {0, -1}/*Nort*/, {0, 1}/*South*/, {1, 0}/*East*/, {-1, 0}/*West*/ };
     std::vector<Direction> directionEnums = { Direction::North, Direction::South, Direction::East, Direction::West };
 
-    // Docking station coordinates
-    Coordinates dock = house->getDockingCoordinates();
-    
+    // docking station and current loction coordinates
     int dis = 0;
+    Coordinates dock = house->getDockingCoordinates();
     Coordinates current = robot->getCurrentLocation();
     while (!q.empty()) {
         current = q.front();
         q.pop();
-
-        // Check if the current cell is the docking station
+        // check if the current cell is the docking station
         if (current == dock) {
             dis = distance[current.getX()][current.getY()];
             break;
         }
-
-        // Explore neighbors
+        // check neighbors
         int newX = -1;
         int newY = -1;
         for (int i = 0; i < 4; ++i) {
@@ -307,7 +195,7 @@ int Algorithm::minDistanceToDockingStation() {
         return -1;
     }
 
-    // Creating the route to the dirty spot
+    // creating path to the dirty spot
     current = house->getDockingCoordinates();
     while (!(current == robot->getCurrentLocation())) {
         auto p = parent[current];
@@ -316,25 +204,23 @@ int Algorithm::minDistanceToDockingStation() {
     }
     // The path is in reverse order, so reverse it
     std::reverse(pathToDocking.begin(), pathToDocking.end());
-
-
     return dis; 
 }
 
 
 int Algorithm::minDistanceToDirtySpot() {
+    
     // Clear the pathToDirtySpot for the new run
     pathToDirtySpot.clear();
+    
     Coordinates currentLocation = robot->getCurrentLocation();
     if(locationIsDirty(currentLocation.getX(), currentLocation.getY())) {
         return 0;
     }
-
     // If there is no dirt left, return
     if (totalDirt == 0) {
         return -1;
     }
-
     // Dimensions of the layout
     int rows = house->getRows() + 2;
     int cols = house->getCols() + 2;
@@ -389,7 +275,6 @@ int Algorithm::minDistanceToDirtySpot() {
         std::cout << "No dirty spot found.\n";
         return -1;
     }
-
     // Creating the route to the dirty spot
     current = dirtySpot;
     while (!(current == currentLocation)) {
@@ -399,9 +284,6 @@ int Algorithm::minDistanceToDirtySpot() {
     }
     // The path is in reverse order, so reverse it
     std::reverse(pathToDirtySpot.begin(), pathToDirtySpot.end());
-
-    // for Debugging
-    //std::cout << "Closest dirty spot found at: (" << dirtySpot.getX() << ", " << dirtySpot.getY() << ")\n";
     return dis; 
 }
 
@@ -421,6 +303,16 @@ int Algorithm::getToatalDirt() {
 }
 
 
+char Algorithm::getCharFromStepsLog(int index) {
+    return stepsListLog[index];
+}
+
+
+int Algorithm::getStepsLogSize() {
+    return stepsListLog.size();
+}
+
+
 bool Algorithm::isAtDocking() const {
     return robot->getCurrentLocation() == house->getDockingCoordinates();
 }
@@ -434,16 +326,8 @@ bool Algorithm::isCharged() const{
 bool Algorithm::validLocation(int x, int y) const {
     int maxCol = house->getRows()+2;
     int maxRow = house->getCols()+2;
-    //int maxRow = house->getRows()+2;
-    //int maxCol = house->getCols()+2;
     char c = house->getLayoutVal(x, y);
     return (x >= 0  && x < maxRow && y >= 0 && y < maxCol && c != 'W');
-    /*/bool b1 = x >= 0;
-    bool b2 = x < (house->getRows() + 2);
-    bool b3 = y >= 0; 
-    bool b4 = y < (house->getCols() + 2); 
-    bool b5 = house->getLayoutVal(x, y) != 'W';
-    return  b1 && b2 && b3 && b4 && b5; /**/
 }
 
 
@@ -465,7 +349,6 @@ void Algorithm::decreaseTotalDirt(){
 
 bool Algorithm::isBatteryLow(int battery, int dist_from_docking, int dist_from_dirty_spot){
     return ((battery == dist_from_docking + 2) || (battery == dist_from_docking + 1));
-    //return (((dist_from_dirty_spot > dist_from_docking + 2) && !isAtDocking()) || (battery == dist_from_docking + 2) || (battery == dist_from_docking + 1));
 }
 
 
@@ -491,28 +374,6 @@ Step Algorithm::chooseDirection() {
     // if we got here it's a bug!
     return Step::North;
 }
-/*/
-Step Algorithm::chooseDirection() {
-
-    Direction direction;
-    
-    if(isReturningToDocking){ 
-        if(!pathToDocking.empty()){
-            direction = pathToDocking.front();
-            pathToDocking.erase(pathToDocking.begin());
-            return convertDirectionToStep(direction);
-        } 
-    }
-    else if(goToDirtySpot){ 
-        if(!pathToDirtySpot.empty()){
-            direction = pathToDirtySpot.front();
-            pathToDirtySpot.erase(pathToDirtySpot.begin());
-            return convertDirectionToStep(direction);
-        } 
-    }
-    // if we got here it's a bug!
-    return Step::North;
-}/**/
 
 
 Step Algorithm::convertDirectionToStep(Direction d) {
@@ -593,6 +454,17 @@ void Algorithm::printPathToDirtySpot() {
             case Direction::West:  std::cout << "West"; break;
         }
         if(i < pathToDirtySpot.size() - 1) { std::cout << ", "; }
+    }
+    std::cout << "}" << std::endl;
+}
+
+
+void Algorithm::printStepsLog() {
+    char c;
+    std::cout << "stepsListLog: { ";
+    for (int i = 0; i < stepsListLog.size(); ++i) {
+        c = stepsListLog[i];
+        std::cout << c;
     }
     std::cout << "}" << std::endl;
 }

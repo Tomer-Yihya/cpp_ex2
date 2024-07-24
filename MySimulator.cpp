@@ -47,7 +47,9 @@ void MySimulator::run() {
         
         // Finish
         else if (step == Step::Finish) {
+            std::cout << "The house Layout after the cleaning of the robot is finished: " << std::endl;
             printStepStatus();
+            algorithm->getToatalDirt() == 0 ? status = Status:: FINISHED : status = Status:: DEAD;
             return;
         }
         
@@ -58,6 +60,7 @@ void MySimulator::run() {
         } 
 
         algorithm->decreaseRemainedSteps();
+        //printStepStatus(); 
     }
 
     std::cout << "The house Layout after the cleaning of the robot is finished: " << std::endl;
@@ -67,6 +70,8 @@ void MySimulator::run() {
 
 void MySimulator::printLocation() {
     Coordinates currentLocation = robot.getCurrentLocation();
+    //algorithm->printPathToDocking();
+    //algorithm->printPathToDirtySpot();
     int x = currentLocation.getX();
     int y = currentLocation.getY();
     std::cout << "currentLocation: layout[" << x << "][" << y << "] = " << house.getLayoutVal(x, y) << "\n";
@@ -79,7 +84,9 @@ void MySimulator::printLayout() {
 
 
 void MySimulator::printStepStatus() {
+    int number_of_steps = house.getMaxStepsAllowed() - algorithm->getRemainedSteps();
     printLocation();
+    std::cout << "number of steps so far = " << number_of_steps << std::endl;
     std::cout << "remainedSteps = " << algorithm->getRemainedSteps() << std::endl;
     std::cout << "totalDirt = " << algorithm->getToatalDirt() << std::endl;
     std::cout << "battery = " << robot.getBatteryLevel() << std::endl;
@@ -103,6 +110,7 @@ void MySimulator::writeOutput(std::string outputFilePath) const {
 
     outFile << "NumSteps = " << totalSteps << std::endl;
     outFile << "DirtLeft = " << remainedDirt << std::endl;
+    outFile << "Steps:" << std::endl;
     switch (status) {
         case Status::FINISHED:
             outFile << "Status = FINISHED" << std::endl;
@@ -116,12 +124,21 @@ void MySimulator::writeOutput(std::string outputFilePath) const {
     }
 
     // add a print of the steps list
+    for(int i = 0; i < algorithm->getStepsLogSize(); i++) {
+        char c = algorithm->getCharFromStepsLog(i);
+        outFile << c;
+    }
+    outFile << std::endl;
+
+    /*/
     char c;
     for(Step s : stepsLog) {
         c = algorithm->convertStepToChar(s);
         outFile << c;
     }
     outFile << std::endl;
+    /**/
 
     outFile.close();
 }
+
