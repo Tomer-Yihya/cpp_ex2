@@ -22,7 +22,7 @@
                 "VacuumCleaner.cpp",
                 "main.cpp",
                 "-o",
-                "Cpp_ex2.exe"
+                "myrobot"
             ],
             "group": {
                 "kind": "build",
