@@ -10,7 +10,7 @@
 
 
 // getting command line arguments for the house file
-int main(int argc, char** argv) {
+/*int main(int argc, char** argv) {
     
     if (argc < 2) {
         std::cerr << "houseFilePath was not found in the argument list" << std::endl;
@@ -31,11 +31,11 @@ int main(int argc, char** argv) {
     }
     return 0;
 }
-
+*/
 
 
 // main for Debbuging
-/*void algorithm_test(std::string file_path, std::string folder_path) {
+void algorithm_test(std::string file_path, std::string folder_path) {
     
     MyAlgorithm algo;
     MySimulator simulator;
@@ -75,4 +75,4 @@ int main() {
 
     return 0;
 }
-*/
+
