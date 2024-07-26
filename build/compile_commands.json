@@ -1,0 +1,27 @@
+[
+{
+  "directory": "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/build",
+  "command": "C:/msys64/ucrt64/bin/c++.exe   -g -std=gnu++14 -o CMakeFiles/myrobot.dir/main.cpp.obj -c C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/main.cpp",
+  "file": "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/main.cpp"
+},
+{
+  "directory": "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/build",
+  "command": "C:/msys64/ucrt64/bin/c++.exe   -g -std=gnu++14 -o CMakeFiles/myrobot.dir/House.cpp.obj -c C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/House.cpp",
+  "file": "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/House.cpp"
+},
+{
+  "directory": "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/build",
+  "command": "C:/msys64/ucrt64/bin/c++.exe   -g -std=gnu++14 -o CMakeFiles/myrobot.dir/MySimulator.cpp.obj -c C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/MySimulator.cpp",
+  "file": "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/MySimulator.cpp"
+},
+{
+  "directory": "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/build",
+  "command": "C:/msys64/ucrt64/bin/c++.exe   -g -std=gnu++14 -o CMakeFiles/myrobot.dir/MyAlgorithm.cpp.obj -c C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/MyAlgorithm.cpp",
+  "file": "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/MyAlgorithm.cpp"
+},
+{
+  "directory": "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/build",
+  "command": "C:/msys64/ucrt64/bin/c++.exe   -g -std=gnu++14 -o CMakeFiles/myrobot.dir/Sensors.Cpp.obj -c C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/Sensors.Cpp",
+  "file": "C:/Users/Admin/Desktop/ex1_C++/Cpp_ex2/Sensors.Cpp"
+}
+]
