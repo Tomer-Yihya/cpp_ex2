@@ -1,13 +1,15 @@
 #include "MySimulator.h"
 #include <iostream>
+#include <filesystem>
 
 
 MySimulator::MySimulator() : algorithm(nullptr), robot(&house), wallSensor(&house, &robot), 
-    dirtSensor(&house, &robot), batteryMeter(house.getBatteryCapacity())
+    dirtSensor(&house, &robot), batteryMeter(house.getBatteryCapacity()), houseFilePath(" ")
 {}
 
 
 bool MySimulator::readHouseFile(const std::string& houseFilePath) {
+    this->houseFilePath = houseFilePath;
     return house.loadFromFile(houseFilePath);
 }
 
@@ -26,7 +28,7 @@ void MySimulator::setAlgorithm(MyAlgorithm& algo) {
 void MySimulator::run() {
     
     // for Debugging
-    printStepStatus();
+    // printStepStatus();
     while (algorithm->getRemainedSteps() > 0 && robot.getBatteryLevel() > 0) {
             
         Step step = algorithm->nextStep();
@@ -47,9 +49,8 @@ void MySimulator::run() {
         // Finish
         else if (step == Step::Finish) {
             std::cout << "The house Layout after the cleaning of the robot is finished: " << std::endl;
-            printStepStatus();
             algorithm->getToatalDirt() == 0 ? status = Status:: FINISHED : status = Status:: DEAD;
-            return;
+            break;
         }
         
         // step  == North/East/South/West
@@ -62,15 +63,24 @@ void MySimulator::run() {
         //printStepStatus(); 
     }
 
-    std::cout << "The house Layout after the cleaning of the robot is finished: " << std::endl;
-    printStepStatus();
+    if(algorithm->getRemainedSteps() == 0 && robot.getBatteryLevel() > 0 && algorithm->isAtDocking()){
+        status = Status:: FINISHED;
+    }
+    
+    // create output file
+    writeOutput();
+
+    //std::cout << "The house Layout after the cleaning of the robot is finished: " << std::endl;
+    //printStepStatus();
 }
 
 
 // write the output file
-void MySimulator::writeOutput(std::string outputFilePath) const {
-    outputFilePath +=  "output.txt";
-    std::ofstream outFile(outputFilePath);
+void MySimulator::writeOutput() const {
+    
+    std::string outputFileName = MySimulator::getOutputFileName(houseFilePath);
+    
+    std::ofstream outFile(outputFileName);
     if (!outFile) {
         std::cerr << "Error opening output file." << std::endl;
         return;
@@ -82,7 +92,6 @@ void MySimulator::writeOutput(std::string outputFilePath) const {
 
     outFile << "NumSteps = " << totalSteps << std::endl;
     outFile << "DirtLeft = " << remainedDirt << std::endl;
-    outFile << "Steps:" << std::endl;
     switch (status) {
         case Status::FINISHED:
             outFile << "Status = FINISHED" << std::endl;
@@ -96,6 +105,7 @@ void MySimulator::writeOutput(std::string outputFilePath) const {
     }
 
     // add a print of the steps list
+    outFile << "Steps:" << std::endl;
     for(int i = 0; i < algorithm->getStepsLogSize(); i++) {
         char c = algorithm->getCharFromStepsLog(i);
         outFile << c;
@@ -104,6 +114,13 @@ void MySimulator::writeOutput(std::string outputFilePath) const {
     outFile.close();
 }
 
+
+std::string MySimulator::getOutputFileName(const std::string& filePath) const {
+    std::filesystem::path path(filePath);
+    std::string fileName = path.filename().string();
+    // Add "output_" to the file name
+    return "output_" + fileName;
+}
 
 
 // for Debugging

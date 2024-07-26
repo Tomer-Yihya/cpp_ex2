@@ -8,6 +8,7 @@
 #include <string>
 
 
+#include <cstring>
 
 // getting command line arguments for the house file
 int main(int argc, char** argv) {
@@ -19,6 +20,7 @@ int main(int argc, char** argv) {
 
     try {
         std::string houseFilePath = argv[1];
+        std::cout << houseFilePath << std::endl;
         MySimulator simulator;
         simulator.readHouseFile(houseFilePath);
         MyAlgorithm algo;

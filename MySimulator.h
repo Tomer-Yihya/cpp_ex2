@@ -26,13 +26,15 @@ class MySimulator {
         const std::string outputFilePath;
         std::vector<Step> stepsLog;
         Status status = WORKING;
+        std::string houseFilePath;
 
     public:
         MySimulator();
         bool readHouseFile(const std::string& houseFilePath);
         void setAlgorithm(MyAlgorithm& algo);
         void run();
-        void writeOutput(std::string outputFilePath) const;
+        void writeOutput() const;
+        std::string getOutputFileName(const std::string& filePath) const;
         
         // print function - Debugging
         void printLocation();
