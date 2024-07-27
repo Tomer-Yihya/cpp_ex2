@@ -4,14 +4,14 @@
 #include "Coordinates.h"
 #include "MyAlgorithm.h"
 #include "Coordinates.h"
-#include <string>
 #include <iostream>
+#include <string>
 
 
 #include <cstring>
 
 int main(int argc, char** argv) {
-    // Checking that there are enough arguments
+    
     if (argc < 2) {
         std::cerr << "houseFilePath was not found in the argument list" << std::endl;
         return 1;
