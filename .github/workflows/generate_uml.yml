@@ -19,11 +19,17 @@ jobs:
     - name: Install PlantUML
       run: sudo apt-get update && sudo apt-get install -y plantuml
 
+    - name: List files before generating diagrams
+      run: ls -la
+
     - name: Generate UML Diagrams
       run: |
         mkdir -p diagrams
         find . -name '*.cpp' -exec sh -c 'plantuml -tpng $1 && mv ${1%.cpp}.png diagrams/' _ {} \;
         ls -la diagrams
+
+    - name: List files after generating diagrams
+      run: ls -la diagrams
 
     - name: Upload UML Diagrams
       uses: actions/upload-artifact@v2
