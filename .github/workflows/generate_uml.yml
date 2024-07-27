@@ -22,7 +22,8 @@ jobs:
     - name: Generate UML Diagrams
       run: |
         mkdir -p diagrams
-        find . -name '*.cpp' -exec plantuml -tpng {} \; -exec mv {}.png diagrams/ \;
+        find . -name '*.cpp' -exec sh -c 'plantuml -tpng $1 && mv ${1%.cpp}.png diagrams/' _ {} \;
+        ls -la diagrams
 
     - name: Upload UML Diagrams
       uses: actions/upload-artifact@v2
