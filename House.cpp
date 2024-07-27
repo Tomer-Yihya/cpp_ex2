@@ -20,6 +20,8 @@ House::House(const std::string& file_path) {
     } 
 }
 
+
+// main functions
 bool House::loadFromFile(const std::string& file_path) {
     
     std::ifstream file(file_path);
@@ -73,6 +75,7 @@ bool House::loadFromFile(const std::string& file_path) {
     file.close();
     return true;
 }
+
 
 // helping functions
 bool House::checkParameter(const std::string line, const std::string paramName, int& param) {
