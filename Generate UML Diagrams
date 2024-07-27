@@ -1,0 +1,31 @@
+name: Generate UML Diagrams
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  generate-diagrams:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install PlantUML
+      run: sudo apt-get update && sudo apt-get install -y plantuml
+
+    - name: Generate UML Diagrams
+      run: |
+        mkdir -p diagrams
+        find . -name '*.cpp' -exec plantuml -tpng {} \; -exec mv {}.png diagrams/ \;
+
+    - name: Upload UML Diagrams
+      uses: actions/upload-artifact@v2
+      with:
+        name: UML Diagrams
+        path: diagrams
