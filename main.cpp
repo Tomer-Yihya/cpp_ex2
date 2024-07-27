@@ -17,10 +17,9 @@ int main(int argc, char** argv) {
         std::cerr << "houseFilePath was not found in the argument list" << std::endl;
         return 1;
     }
-
     try {
         std::string houseFilePath = argv[1];
-        std::cout << houseFilePath << std::endl;
+        //std::cout << houseFilePath << std::endl;
         MySimulator simulator;
         simulator.readHouseFile(houseFilePath);
         MyAlgorithm algo;
