@@ -4,13 +4,12 @@
 #include "Coordinates.h"
 #include "MyAlgorithm.h"
 #include "Coordinates.h"
-#include <iostream>
 #include <string>
+#include <iostream>
 
 
 #include <cstring>
 
-// getting command line arguments for the house file
 int main(int argc, char** argv) {
     // Checking that there are enough arguments
     if (argc < 2) {
