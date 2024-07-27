@@ -28,7 +28,7 @@ jobs:
     - name: Generate UML Diagrams
       run: |
         mkdir -p diagrams
-        find . -name '*.cpp' -exec sh -c 'plantuml -tpng $1 && mv ${1%.cpp}.png diagrams/' _ {} \;
+        find . -name '*.cpp' -exec sh -c 'echo Processing $1 && plantuml -tpng $1 && mv ${1%.cpp}.png diagrams/' _ {} \;
         ls -la diagrams
 
     - name: List files after generating diagrams
