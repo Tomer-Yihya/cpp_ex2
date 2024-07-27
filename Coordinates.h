@@ -1,8 +1,8 @@
 #ifndef COORDINATES_H
 #define COORDINATES_H
 
-class Coordinates
-{
+class Coordinates {
+    
     private:
         int xValue;
         int yValue;

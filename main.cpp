@@ -18,7 +18,6 @@ int main(int argc, char** argv) {
     }
     try {
         std::string houseFilePath = argv[1];
-        //std::cout << houseFilePath << std::endl;
         MySimulator simulator;
         simulator.readHouseFile(houseFilePath);
         MyAlgorithm algo;
