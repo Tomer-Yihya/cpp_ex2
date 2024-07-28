@@ -3,7 +3,7 @@
 
 #include "abstract_algorithm.h"
 #include "House.h"
-#include "vacuumCleaner.h"
+#include "VacuumCleaner.h"
 #include "Coordinates.h"
 #include <algorithm>
 #include <vector>
