@@ -1,5 +1,9 @@
 # Project Name: Vacuum Cleaner Simulation
 
+## submitters
+- Tomer Yihya
+- Or Asheri
+
 ## Overview
 This project simulates the operation of a robotic vacuum cleaner that navigates around the house in an intelligent way. The purpose of the simulation is to simulate and trace the actions of the robot during the house cleaning operation while taking into account its condition in terms of location and operation, the amount of dirt in the house and the battery limitations.
 
@@ -41,14 +45,45 @@ The project consists of the following files:
 1. `input.txt` - Example of an input file specifying house layout and simulation parameters.
 2. `output_input.txt` - Example of an output file showing the results of the simulation.
 
+## Error Handling
+The program includes error handling to manage invalid input files, runtime errors, and unexpected conditions.
+It ensures that the simulation can gracefully handle errors without abruptly crashing.
+
 ## How to Run the Simulation
-1. Compile the project using the make command:
+1. Ensure you have `make` and `g++` installed on your system.
+2. Compile the project using the make command:
+   ```sh
    make
-2. Run the executable with an input file as an argument:
+   ```
+3. Run the executable, give an input file as an argument:
+   ```sh
    ./myrobot input_file.txt
+   ```
 
+## Input File Format
 
-### Input File Format (`inputfile.txt`)
+The input file should contain the following information:
+1. MaxSteps - The Maximum number of steps allowed.
+2. MaxBattery - The battery capacity. 
+3. Rows - The number of rows in the home representation.
+4. Cols - The number of columns in the home representation.
+5. House layout:
+   each char represents a dirt level (`0-9`), a wall (`W`), or the docking station (`D` - must have one).
+
+## Output File Format
+The program generates an output file which has the following data:
+1. NumSteps - The number of steps taken.
+2. DirtLeft - Remaining Dirt.
+3. Status - FINISHED, WORKING or DEAD.
+4. All steps performed:
+- 'S' for South
+- 'N' for north
+- 'E' to the east
+- 'W' for West
+- 's' to stay
+- 'F' to finish
+
+### Input File - example (`inputfile.txt`)
 ```
 1-Small house
 MaxSteps = 100
