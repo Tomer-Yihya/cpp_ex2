@@ -10,7 +10,7 @@ class MyBatteryMeter : public BatteryMeter {
 
 	private:
 		int batteryCapacity = 0;
-		int battery = 0;
+		double battery = 0;
 
 	public:
 		MyBatteryMeter(int batteryCapacity);

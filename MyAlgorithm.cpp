@@ -44,13 +44,15 @@ Step MyAlgorithm::nextStep() {
             return Step::Finish;
     }
 
-    Step step;
-    Direction dir;
+    Step step = Step::Stay;
+    Direction dir = Direction::North;
     int battery = robot->getBatteryLevel();
     int dist_from_docking = minDistanceToDockingStation();
     int dist_from_dirty_spot = minDistanceToDirtySpot();
     if(dist_from_dirty_spot == -1){
+        // at a docking station and there is no way to reach the remaining dirt
         if(isAtDocking()) {
+            stepsListLog.push_back(convertStepToChar(Step::Stay));
             return Step::Finish;
         }
         isReturningToDocking = true;
@@ -59,7 +61,6 @@ Step MyAlgorithm::nextStep() {
         stepsListLog.push_back(convertStepToChar(step));
         return step; // MOVE - to Docking station
     }
-
     // if the house is clean OR the battery is low - go to the Docking station
     if(totalDirt == 0 || isBatteryLow(battery, dist_from_docking) || isCargging) {
         isReturningToDocking = true;
@@ -69,7 +70,6 @@ Step MyAlgorithm::nextStep() {
         isReturningToDocking = false;
         goToDirtySpot = true;
     }
-
     // if the robot is on his way to the Docking station
     if(isReturningToDocking) {
         // already in the docking station
@@ -113,8 +113,7 @@ Step MyAlgorithm::nextStep() {
             return step;
         }
     }
-
-    // if we got here it's a bug!!!
+    // defult case
     step = chooseDirection(); 
     stepsListLog.push_back(convertStepToChar(step));
     return step; // MOVE - to Docking station    

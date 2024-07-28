@@ -62,7 +62,7 @@ void MySimulator::run() {
             robot.move(direction);
         } 
         algorithm->decreaseRemainedSteps();
-        //printStepStatus(); 
+        if(step != Step::Finish && step != Step::Stay) { printStepStatus(); } 
     }
 
     if(algorithm->getRemainedSteps() == 0 && robot.getBatteryLevel() > 0 && algorithm->isAtDocking()){

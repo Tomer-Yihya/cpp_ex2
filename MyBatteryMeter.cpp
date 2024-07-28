@@ -31,12 +31,12 @@ bool MyBatteryMeter::isCharged() const {
 
 void MyBatteryMeter::charge() {
     if (battery < batteryCapacity) {
-        battery += batteryCapacity / 20;
-
+        battery += (double)batteryCapacity / 20;
         // edge case
         if (battery > batteryCapacity) {
             battery = batteryCapacity;
         }
     }
+    std::cout << "battery = " << battery << std::endl;
 }
 
