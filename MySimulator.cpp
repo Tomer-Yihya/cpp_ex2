@@ -27,12 +27,9 @@ void MySimulator::setAlgorithm(MyAlgorithm& algo) {
 
 void MySimulator::run() {
     
-    // for Debugging
-    // printStepStatus();
     while (algorithm->getRemainedSteps() > 0 && robot.getBatteryLevel() > 0) {
             
         Step step = algorithm->nextStep();
-        
         // Stay/CLEAN
         if(step == Step::Stay) {
             // CHARGE
@@ -45,33 +42,24 @@ void MySimulator::run() {
                 algorithm->decreaseTotalDirt();
             } 
         }
-        
         // Finish
         else if (step == Step::Finish) {
-            std::cout << "The house Layout after the cleaning of the robot is finished: " << std::endl;
             algorithm->getToatalDirt() == 0 ? status = Status:: FINISHED : status = Status:: DEAD;
             break;
         }
-        
         // step  == North/East/South/West
         else { 
             Direction direction = algorithm->convertStepToDirection(step);
             robot.move(direction);
         } 
-
-        algorithm->decreaseRemainedSteps();
-        //printStepStatus(); 
+        algorithm->decreaseRemainedSteps(); 
     }
 
     if(algorithm->getRemainedSteps() == 0 && robot.getBatteryLevel() > 0 && algorithm->isAtDocking()){
         status = Status:: FINISHED;
     }
-    
     // create output file
     writeOutput();
-
-    //std::cout << "The house Layout after the cleaning of the robot is finished: " << std::endl;
-    //printStepStatus();
 }
 
 

@@ -11,7 +11,7 @@
 #include <cstring>
 
 int main(int argc, char** argv) {
-    // Checking that there are enough arguments
+    
     if (argc < 2) {
         std::cerr << "houseFilePath was not found in the argument list" << std::endl;
         return 1;
@@ -30,4 +30,3 @@ int main(int argc, char** argv) {
     }
     return 0;
 }
-
