@@ -1,6 +1,5 @@
 #include "MySimulator.h"
 #include <iostream>
-#include <filesystem>
 
 
 MySimulator::MySimulator() : algorithm(nullptr), robot(&house), wallSensor(&house, &robot), 
@@ -44,15 +43,26 @@ void MySimulator::run() {
         }
         // Finish
         else if (step == Step::Finish) {
-            algorithm->getToatalDirt() == 0 ? status = Status:: FINISHED : status = Status:: DEAD;
-            break;
+            if(algorithm->getToatalDirt() == 0) {
+                status = Status:: FINISHED;
+                break;
+            }
+            else if(algorithm->getToatalDirt() != 0 && robot.getBatteryLevel() > 0) {
+                status = Status:: WORKING;
+                break;
+            }
+            else {
+                status = Status:: DEAD;
+                break;
+            }
         }
         // step  == North/East/South/West
         else { 
             Direction direction = algorithm->convertStepToDirection(step);
             robot.move(direction);
         } 
-        algorithm->decreaseRemainedSteps(); 
+        algorithm->decreaseRemainedSteps();
+        //printStepStatus(); 
     }
 
     if(algorithm->getRemainedSteps() == 0 && robot.getBatteryLevel() > 0 && algorithm->isAtDocking()){
@@ -104,9 +114,8 @@ void MySimulator::writeOutput() const {
 
 
 std::string MySimulator::getOutputFileName(const std::string& filePath) const {
-    std::filesystem::path path(filePath);
-    std::string fileName = path.filename().string();
-    // Add "output_" to the file name
+    size_t pos = filePath.find_last_of("/\\");
+    std::string fileName = (pos == std::string::npos) ? filePath : filePath.substr(pos + 1);
     return "output_" + fileName;
 }
 
@@ -114,8 +123,8 @@ std::string MySimulator::getOutputFileName(const std::string& filePath) const {
 // for Debugging
 void MySimulator::printLocation() {
     Coordinates currentLocation = robot.getCurrentLocation();
-    algorithm->printPathToDocking();
-    algorithm->printPathToDirtySpot();
+    //algorithm->printPathToDocking();
+    //algorithm->printPathToDirtySpot();
     int x = currentLocation.getX();
     int y = currentLocation.getY();
     std::cout << "currentLocation: layout[" << x << "][" << y << "] = " << house.getLayoutVal(x, y) << "\n";

@@ -22,7 +22,9 @@ int main(int argc, char** argv) {
         simulator.readHouseFile(houseFilePath);
         MyAlgorithm algo;
         simulator.setAlgorithm(algo);
+        // simulator.printStepStatus(); // see the house before 
         simulator.run();
+        // simulator.printStepStatus(); // see the house after
     }
     catch (const std::exception& ex) {
         std::cerr << "Error: " << ex.what() << std::endl;

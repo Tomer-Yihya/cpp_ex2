@@ -50,6 +50,9 @@ Step MyAlgorithm::nextStep() {
     int dist_from_docking = minDistanceToDockingStation();
     int dist_from_dirty_spot = minDistanceToDirtySpot();
     if(dist_from_dirty_spot == -1){
+        if(isAtDocking()) {
+            return Step::Finish;
+        }
         isReturningToDocking = true;
         goToDirtySpot = false;
         step = chooseDirection(); 
@@ -191,7 +194,6 @@ int MyAlgorithm::minDistanceToDockingStation() {
     }
     // Return -1 if the docking station is not reachable
     if (current.getX() != dock.getX() || current.getY() != dock.getY()) {
-        std::cout << "The docking station cannot be found\n";
         return -1;
     }
 
@@ -272,7 +274,6 @@ int MyAlgorithm::minDistanceToDirtySpot() {
     }
     // Return -1 if the the house is clean
     if (dirtySpot.getX() == -1 && dirtySpot.getY() == -1) {
-        std::cout << "No dirty spot found.\n";
         return -1;
     }
     // Creating the route to the dirty spot
