@@ -37,6 +37,5 @@ void MyBatteryMeter::charge() {
             battery = batteryCapacity;
         }
     }
-    std::cout << "battery = " << battery << std::endl;
 }
 

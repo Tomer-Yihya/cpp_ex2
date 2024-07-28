@@ -62,7 +62,7 @@ Step MyAlgorithm::nextStep() {
         return step; // MOVE - to Docking station
     }
     // if the house is clean OR the battery is low - go to the Docking station
-    if(totalDirt == 0 || isBatteryLow(battery, dist_from_docking) || isCargging) {
+    if(totalDirt == 0 || isBatteryLow(battery, dist_from_docking) || isCargging || dist_from_docking == remainedSteps) {
         isReturningToDocking = true;
         goToDirtySpot = false; 
     }
@@ -74,7 +74,12 @@ Step MyAlgorithm::nextStep() {
     if(isReturningToDocking) {
         // already in the docking station
         if(isCargging || isAtDocking()) { 
-            if(isCharged()) {
+            if(remainedSteps == 0) {
+                step = Step::Finish;
+                stepsListLog.push_back(convertStepToChar(step));
+                return step; // Finish
+            }
+            else if(isCharged()) {
                 isCargging = false;
                 isReturningToDocking = false;
                 goToDirtySpot = true;
@@ -82,11 +87,12 @@ Step MyAlgorithm::nextStep() {
                 stepsListLog.push_back(convertStepToChar(step));
                 return step; // MOVE
             }
-            //else (still chargging)
-            isCargging = true;
-            step = Step::Stay;
-            stepsListLog.push_back(convertStepToChar(step));
-            return step; // CHARGE
+            else { //(still chargging)
+                isCargging = true;
+                step = Step::Stay;
+                stepsListLog.push_back(convertStepToChar(step));
+                return step; // CHARGE
+            }
         }
         else { // Move - to Docking station
             dir = pathToDocking.front();

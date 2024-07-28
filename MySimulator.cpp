@@ -43,12 +43,8 @@ void MySimulator::run() {
         }
         // Finish
         else if (step == Step::Finish) {
-            if(algorithm->getToatalDirt() == 0) {
+            if(robot.getBatteryLevel() > 0) {
                 status = Status:: FINISHED;
-                break;
-            }
-            else if(algorithm->getToatalDirt() != 0 && robot.getBatteryLevel() > 0) {
-                status = Status:: WORKING;
                 break;
             }
             else {
@@ -62,7 +58,7 @@ void MySimulator::run() {
             robot.move(direction);
         } 
         algorithm->decreaseRemainedSteps();
-        if(step != Step::Finish && step != Step::Stay) { printStepStatus(); } 
+        //if(step != Step::Finish && step != Step::Stay) { printStepStatus(); } 
     }
 
     if(algorithm->getRemainedSteps() == 0 && robot.getBatteryLevel() > 0 && algorithm->isAtDocking()){
