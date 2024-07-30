@@ -76,6 +76,9 @@ Step MyAlgorithm::nextStep() {
         }
         return returningToDocking();
     }
+    else if ((2 * dist_from_dirty_spot) > remainedSteps) {
+        return returningToDocking();
+    }
     else if (dist_from_dirty_spot != -1) {
         return returningToClean();
     }

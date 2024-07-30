@@ -29,7 +29,7 @@ void MySimulator::run() {
     
     while (algorithm->getRemainedSteps() > 0 && robot.getBatteryLevel() > 0) {
         
-        printGraphStatus(algorithm->getRemainedSteps(), robot.getBatteryLevel());
+        //printGraphStatus(algorithm->getRemainedSteps(), robot.getBatteryLevel());
         Step step = algorithm->nextStep();
         
         // Stay/CLEAN
