@@ -17,12 +17,14 @@ int main(int argc, char** argv) {
     try {
         std::string houseFilePath = argv[1];
         MySimulator simulator;
-        simulator.readHouseFile(houseFilePath);
+        if(!simulator.readHouseFile(houseFilePath)){
+            throw std::runtime_error("Failed to open the input file.");
+        }
         MyAlgorithm algo;
         simulator.setAlgorithm(algo);
-        simulator.printStepStatus(); // see the house before 
+        //simulator.printStepStatus(); // see the house before 
         simulator.run();
-        simulator.printStepStatus(); // see the house after
+        //simulator.printStepStatus(); // see the house after
     }
     catch (const std::exception& ex) {
         std::cerr << "Error: " << ex.what() << std::endl;

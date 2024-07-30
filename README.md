@@ -7,6 +7,11 @@
 ## Overview
 This project simulates the operation of a robotic vacuum cleaner that navigates around the house in an intelligent way. The purpose of the simulation is to simulate and trace the actions of the robot during the house cleaning operation while taking into account its condition in terms of location and operation, the amount of dirt in the house and the battery limitations.
 
+## Solution Approach
+The simulation starts by initializing a `house` object using a layout file that defines the structure of the house, including walls, dirt levels, and the docking station. If any of these elements are missing, the program will terminate and return an error. 
+The `algorithm` object manages the entire cleaning process with the help of a `graph` object, to which it feeds information learned by interacting with various sensors (`DirtSensor`, `BatteryMeter`, `WallSensor`) and the `robot`. The algorithm updates a `graph` representation of the house based on the data received from the robot and the sensors. The robot reports its position to the algorithm, which then updates the graph with the robot's current position and sensor data. This process continues until the cleaning is complete or the allowed step quota ends.
+
+
 ## File Structure
 The project consists of the following files:
 

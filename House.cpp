@@ -31,13 +31,23 @@ bool House::loadFromFile(const std::string& file_path) {
     std::string line;
     if (std::getline(file, line)) fileName = line;
     std::getline(file, line); 
-    if (!checkParameter(line, "MaxSteps", maxSteps)) return false;
+    if (!checkParameter(line, "MaxSteps", maxSteps)) {
+        throw std::runtime_error("The file does not contain MaxSteps so the run cannot be completed");
+    }
+
     std::getline(file, line); 
-    if (!checkParameter(line, "MaxBattery", maxBattery)) return false;
+    if (!checkParameter(line, "MaxBattery", maxBattery)) {
+        throw std::runtime_error("The file does not contain MaxBattery so the run cannot be completed");
+    }
+
     std::getline(file, line); 
-    if (!checkParameter(line, "Rows", rows)) return false;
+    if (!checkParameter(line, "Rows", rows)) {
+        throw std::runtime_error("The file does not contain Rows variable so the run cannot be completed");
+    }
     std::getline(file, line); 
-    if (!checkParameter(line, "Cols", cols)) return false;
+    if (!checkParameter(line, "Cols", cols)) {
+        throw std::runtime_error("The file does not contain Cols variable so the run cannot be completed");
+    }
 
     std::vector<char> row;
     while (std::getline(file, line)) {

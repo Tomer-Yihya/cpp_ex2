@@ -11,15 +11,11 @@ class MyWallsSensor : public WallsSensor{
 	private:
 		const House* house;
 		const VacuumCleaner* robot;
-		Coordinates currLocation;
-
 
 	public:
 		MyWallsSensor(const House* house, const VacuumCleaner* robot);
 		virtual ~MyWallsSensor() {}
 		virtual bool isWall(Direction d) const override;
-		void move(Direction d);
-
 };
 
 

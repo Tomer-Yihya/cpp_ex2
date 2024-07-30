@@ -69,7 +69,7 @@ void MySimulator::run() {
     }
     // create output file
     writeOutput();
-    printGraphStatus(algorithm->getRemainedSteps(), robot.getBatteryLevel());
+    //printGraphStatus(algorithm->getRemainedSteps(), robot.getBatteryLevel());
 }
 
 
