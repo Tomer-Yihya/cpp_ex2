@@ -2,7 +2,9 @@
 
 
 MyWallsSensor::MyWallsSensor(const House* house, const VacuumCleaner* robot) : 
-    house(house), robot(robot) {}
+    house(house), robot(robot) {
+        currLocation = house->getDockingCoordinates();
+    }
 
 
 bool MyWallsSensor::isWall(Direction d) const {
@@ -26,4 +28,23 @@ bool MyWallsSensor::isWall(Direction d) const {
     
     bool res = house->getLayoutVal(temp.getX(), temp.getY()) == 'W';
 	return res;
+}
+
+
+void MyWallsSensor::move(Direction d) { 
+    
+    switch (d) {
+        case Direction::North:
+            currLocation = currLocation.getCoordinatesN();
+            break;
+        case Direction::South:
+            currLocation = currLocation.getCoordinatesS();
+            break;
+        case Direction::West:
+            currLocation = currLocation.getCoordinatesW();
+            break;
+        case Direction::East:
+            currLocation = currLocation.getCoordinatesE();
+            break;
+    }
 }

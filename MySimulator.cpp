@@ -15,20 +15,23 @@ bool MySimulator::readHouseFile(const std::string& houseFilePath) {
 
 void MySimulator::setAlgorithm(MyAlgorithm& algo) {
     algorithm = &algo;
+    algorithm->setStepsAndTotalDirt(house.getMaxStepsAllowed(), house.getTotalDirt());
     robot = VacuumCleaner(&house);
     wallSensor = MyWallsSensor(&house, &robot);
     dirtSensor = MyDirtSensor(&house, &robot);
     batteryMeter = MyBatteryMeter(house.getBatteryCapacity());
 
-    algorithm->initAlgo(house, robot, wallSensor, dirtSensor, batteryMeter);
+    algorithm->initAlgo(robot, wallSensor, dirtSensor, batteryMeter);
 }
 
 
 void MySimulator::run() {
     
     while (algorithm->getRemainedSteps() > 0 && robot.getBatteryLevel() > 0) {
-            
+        
+        printGraphStatus(algorithm->getRemainedSteps(), robot.getBatteryLevel());
         Step step = algorithm->nextStep();
+        
         // Stay/CLEAN
         if(step == Step::Stay) {
             // CHARGE
@@ -53,9 +56,9 @@ void MySimulator::run() {
             }
         }
         // step  == North/East/South/West
-        else { 
+        else {
             Direction direction = algorithm->convertStepToDirection(step);
-            robot.move(direction);
+            algorithm->move(algorithm->convertDirectionToStep(direction));
         } 
         algorithm->decreaseRemainedSteps();
         //if(step != Step::Finish && step != Step::Stay) { printStepStatus(); } 
@@ -66,6 +69,7 @@ void MySimulator::run() {
     }
     // create output file
     writeOutput();
+    printGraphStatus(algorithm->getRemainedSteps(), robot.getBatteryLevel());
 }
 
 
@@ -144,3 +148,9 @@ void MySimulator::printStepStatus() {
 
 }
 
+
+void MySimulator::printGraphStatus(int remainedSteps, int battery) {
+    std::cout << "remainedSteps = " << remainedSteps << std::endl;
+    std::cout << "battery = " << battery << std::endl;
+    algorithm->printGraph();
+}

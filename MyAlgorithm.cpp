@@ -6,7 +6,7 @@ MyAlgorithm::~MyAlgorithm() {}
 
 
 MyAlgorithm::MyAlgorithm() 
-    : house(nullptr), robot(nullptr), wallSensor(nullptr), dirtSensor(nullptr), 
+    : graph(), robot(nullptr), wallSensor(nullptr), dirtSensor(nullptr), 
     batteryMeter(nullptr), remainedSteps(0), totalDirt(0), maxSteps(0) 
 {}
 
@@ -31,8 +31,13 @@ void MyAlgorithm::setBatteryMeter(const BatteryMeter& meter) {
 }
 
 
+void MyAlgorithm::setStepsAndTotalDirt(int steps, int dirt){
+    remainedSteps = steps;
+    totalDirt = dirt;
+}
+
+
 Step MyAlgorithm::nextStep() {
-    
     // DEAD
     if(remainedSteps <= 0) {
         robotIsDead = true;
@@ -40,102 +45,180 @@ Step MyAlgorithm::nextStep() {
     }
     // FINISH
     if(totalDirt == 0 && isAtDocking()){
-            stepsListLog.push_back('F');
-            return Step::Finish;
+        stepsListLog.push_back('F');
+        return Step::Finish;
     }
-
-    Step step = Step::Stay;
-    Direction dir = Direction::North;
+    // Check if there are walls around the current location and add to the graph if so
+    addWalls();
+    // CLEAN or go to CHARGE
     int battery = robot->getBatteryLevel();
+    if(battery == robot->getMaxBattery()) {
+        isCargging = false;
+    }
     int dist_from_docking = minDistanceToDockingStation();
+    // if the house is clean OR the battery is low - go to the Docking station
+    if(totalDirt == 0 || isBatteryLow(battery, dist_from_docking) || isCargging || dist_from_docking == remainedSteps) {
+        return returningToDocking();    
+    }
     int dist_from_dirty_spot = minDistanceToDirtySpot();
-    if(dist_from_dirty_spot == -1){
+    int dist_from_new_spot = minDistanceToNewSpot();
+    if(dist_from_new_spot == -1 && dist_from_dirty_spot == -1) {
+        graph.resize();
+        dist_from_new_spot = minDistanceToNewSpot();
+    }
+    
+    // We are done or it is not possible to continue cleaning
+    if((dist_from_dirty_spot == -1) && (dist_from_new_spot == -1)) {
         // at a docking station and there is no way to reach the remaining dirt
         if(isAtDocking()) {
             stepsListLog.push_back(convertStepToChar(Step::Stay));
             return Step::Finish;
         }
-        isReturningToDocking = true;
-        goToDirtySpot = false;
-        step = chooseDirection(); 
-        stepsListLog.push_back(convertStepToChar(step));
-        return step; // MOVE - to Docking station
+        return returningToDocking();
     }
-    // if the house is clean OR the battery is low - go to the Docking station
-    if(totalDirt == 0 || isBatteryLow(battery, dist_from_docking) || isCargging || dist_from_docking == remainedSteps) {
-        isReturningToDocking = true;
-        goToDirtySpot = false; 
+    else if (dist_from_dirty_spot != -1) {
+        return returningToClean();
     }
     else {
-        isReturningToDocking = false;
-        goToDirtySpot = true;
+        return goToNewSpot();
     }
-    // if the robot is on his way to the Docking station
-    if(isReturningToDocking) {
-        // already in the docking station
-        if(isCargging || isAtDocking()) { 
-            if(remainedSteps == 0) {
-                step = Step::Finish;
-                stepsListLog.push_back(convertStepToChar(step));
-                return step; // Finish
-            }
-            else if(isCharged()) {
-                isCargging = false;
-                isReturningToDocking = false;
-                goToDirtySpot = true;
-                step = chooseDirection();
-                stepsListLog.push_back(convertStepToChar(step));
-                return step; // MOVE
-            }
-            else { //(still chargging)
-                isCargging = true;
-                step = Step::Stay;
-                stepsListLog.push_back(convertStepToChar(step));
-                return step; // CHARGE
-            }
-        }
-        else { // Move - to Docking station
-            dir = pathToDocking.front();
-            pathToDocking.erase(pathToDocking.begin());
-            step =  convertDirectionToStep(dir); // Move
-            stepsListLog.push_back(convertStepToChar(step));
-            return step;
-        }
-    }
-    // if the robot is on his way to the closest dirty spot
-    if(goToDirtySpot) {
-        // reached the dirty point
-        if(dirtSensor->dirtLevel() > 0) { 
-            goToDirtySpot = false;
-            stepsListLog.push_back('s');
-            return Step::Stay; // CLEAN
-        }
-        // on our way to the dirty spot
-        else { 
-            dir = pathToDirtySpot.front();
-            pathToDirtySpot.erase(pathToDirtySpot.begin());
-            step =  convertDirectionToStep(dir); // Move
-            stepsListLog.push_back(convertStepToChar(step));
-            return step;
-        }
-    }
-    // defult case
-    step = chooseDirection(); 
-    stepsListLog.push_back(convertStepToChar(step));
-    return step; // MOVE - to Docking station    
+    // Default setting
+    return returningToDocking();
 }
 
 
-void  MyAlgorithm::initAlgo(House& house, VacuumCleaner& robot, WallsSensor& wallSensor, DirtSensor& dirtSensor, BatteryMeter& batteryMeter){
+void MyAlgorithm::addWalls() {
+    Coordinates wallCoordinates = getCurrLocation();
+    int size = graph.getGraphSize();
+    int x = wallCoordinates.getX();
+    int y = wallCoordinates.getY(); 
+    if (x == 0 || x == size-1 || y == 0 || y == size-1) {
+        if (y == 0) {
+            graph.resizeN();
+        }
+        if (y == size-1) {
+            graph.resizeS();
+        }
+        if (x == 0) {
+            graph.resizeW();
+        }
+        if (x == size-1) {
+            graph.resizeE();
+        }
+    }
+    Direction directions[4] = { Direction::North, Direction::East, Direction::South, Direction::West };
+    for(int i = 0; i < 4; i++) {
+        Direction dir = directions[i];
+        wallCoordinates = getCurrLocation();
+        if(wallSensor->isWall(dir)) {
+            wallCoordinates = moveCoordinates(wallCoordinates,dir);
+            graph.setVal(wallCoordinates, 'W');
+        }
+    }
+}
+
+
+Step MyAlgorithm::returningToDocking() {
+    Step step;
+    // already in the docking station
+    if(isCargging || isAtDocking()) { 
+        if(remainedSteps == 0) {
+            step = Step::Finish;
+            stepsListLog.push_back(convertStepToChar(step));
+            return step; // Finish
+        }
+        else if(isCharged()) {
+            isCargging = false;
+            return returningToClean(); // MOVE
+        }
+        else { //(still chargging)
+            isCargging = true;
+            step = Step::Stay;
+            stepsListLog.push_back(convertStepToChar(step));
+            return step; // CHARGE
+        }
+    }
+    else { // Move - on the way to Docking station
+        Direction dir = pathToDocking.front();
+        pathToDocking.erase(pathToDocking.begin());
+        step = convertDirectionToStep(dir); // Move
+        stepsListLog.push_back(convertStepToChar(step));
+        return step;
+    }
+}
+
+
+Step MyAlgorithm::returningToClean() {
+    Step step;
+    // reached the dirty point
+    if(dirtSensor->dirtLevel() > 0) { 
+        step = Step::Stay;
+    }
+    // on our way to the dirty spot
+    else { 
+        Direction dir = pathToDirtySpot.front();
+        pathToDirtySpot.erase(pathToDirtySpot.begin());
+        step = convertDirectionToStep(dir); // Move
+    }
+    stepsListLog.push_back(convertStepToChar(step));
+    return step;
+}
+
+
+Step MyAlgorithm::goToNewSpot() {
+    Step step;
+    // reached the new spot
+    if (dirtSensor->dirtLevel() > 0) {
+        step = Step::Stay;
+    }
+    // on our way to the dirty spot
+    else {
+        Direction dir = pathToNewSpot.front();
+        pathToNewSpot.erase(pathToNewSpot.begin());
+        step = convertDirectionToStep(dir); // Move
+    }
+    stepsListLog.push_back(convertStepToChar(step));
+    return step;
+}
+
+
+void  MyAlgorithm::initAlgo(VacuumCleaner& robot, WallsSensor& wallSensor, DirtSensor& dirtSensor, BatteryMeter& batteryMeter){
     
-    this->house = &house; 
     this->robot = &robot; 
     setWallsSensor(wallSensor); 
     setDirtSensor(dirtSensor);
     setBatteryMeter(batteryMeter); 
-    remainedSteps = house.getMaxStepsAllowed();
-    setMaxSteps(house.getMaxStepsAllowed());
-    totalDirt = house.getTotalDirt();
+    setMaxSteps(remainedSteps);
+    // lastCleannigSpot = graph.getDockingLocation();
+}
+
+
+void MyAlgorithm::move(Step step){
+    robot->move(convertStepToDirection(step));
+    graph.move(convertStepToDirection(step));
+    if(isAtDocking()) { return; }
+    char c = '0' + dirtSensor->dirtLevel();
+    if(c == '0') { c = ' '; }
+    graph.setVal(graph.getCurrLocation(), c);
+}
+
+
+Coordinates MyAlgorithm::moveCoordinates (Coordinates coor, Direction d) {
+    switch (d) {
+        case Direction::North:
+            coor = coor.getCoordinatesN();
+            break;
+        case Direction::South:
+            coor = coor.getCoordinatesS();
+            break;
+        case Direction::West:
+            coor = coor.getCoordinatesW();
+            break;
+        case Direction::East:
+            coor = coor.getCoordinatesE();
+            break;
+    }
+    return coor;
 }
 
 
@@ -144,15 +227,13 @@ int MyAlgorithm::minDistanceToDockingStation() {
 
     // Clear the pathToDocking for the new run
     pathToDocking.clear();
-
-    // if there is no dirt left, return
+    //if already at a docking station    
     if (isAtDocking()) {
         return 0;
     }
-
-    // Dimensions of the layout
-    int rows = house->getRows() + 2;
-    int cols = house->getCols() + 2;
+    // Dimensions of the graph
+    int rows = graph.getGraphSize();
+    int cols = graph.getGraphSize();
 
     // Queue for BFS and a set for visited cells
     std::queue<Coordinates> q;
@@ -161,7 +242,7 @@ int MyAlgorithm::minDistanceToDockingStation() {
     std::map<Coordinates, std::pair<Coordinates, Direction>> parent; // To track the path
       
     // Start BFS from the current location
-    Coordinates currentLocation = robot->getCurrentLocation();
+    Coordinates currentLocation = graph.getCurrLocation();
     q.push(currentLocation);
     visited[currentLocation.getX()][currentLocation.getY()] = true;
     distance[currentLocation.getX()][currentLocation.getY()] = 0;
@@ -172,11 +253,15 @@ int MyAlgorithm::minDistanceToDockingStation() {
 
     // docking station and current loction coordinates
     int dis = 0;
-    Coordinates dock = house->getDockingCoordinates();
-    Coordinates current = robot->getCurrentLocation();
+    Coordinates dock = graph.getDockingLocation();
+    Coordinates current = graph.getCurrLocation();
     while (!q.empty()) {
         current = q.front();
         q.pop();
+        // if current is out of the graph
+        if(current.getX() >= rows || current.getY() >= cols || current.getX() < 0 || current.getY() < 0) {
+            continue;
+        }
         // check if the current cell is the docking station
         if (current == dock) {
             dis = distance[current.getX()][current.getY()];
@@ -188,8 +273,11 @@ int MyAlgorithm::minDistanceToDockingStation() {
         for (int i = 0; i < 4; ++i) {
             newX = current.getX() + directions[i].first;
             newY = current.getY() + directions[i].second;
-            if (validLocation(newX, newY) && !visited[newX][newY]) {
-                Coordinates neighbor = {newX, newY};
+            if (newX >= rows || newX < 0 || newY >= rows || newY < 0) {
+                continue;;
+            }
+            Coordinates neighbor = {newX, newY};
+            if (validLocation(neighbor) && !visited[newX][newY]) {
                 q.push(neighbor);
                 visited[newX][newY] = true;
                 distance[newX][newY] = distance[current.getX()][current.getY()] + 1;
@@ -203,8 +291,8 @@ int MyAlgorithm::minDistanceToDockingStation() {
     }
 
     // creating path to the dirty spot
-    current = house->getDockingCoordinates();
-    while (!(current == robot->getCurrentLocation())) {
+    current = graph.getDockingLocation();
+    while (!(current == graph.getCurrLocation())) {
         auto p = parent[current];
         pathToDocking.push_back(p.second);
         current = p.first;
@@ -219,18 +307,20 @@ int MyAlgorithm::minDistanceToDirtySpot() {
     
     // Clear the pathToDirtySpot for the new run
     pathToDirtySpot.clear();
-    
-    Coordinates currentLocation = robot->getCurrentLocation();
-    if(locationIsDirty(currentLocation.getX(), currentLocation.getY())) {
+    Coordinates currentLocation = graph.getCurrLocation();
+    char charVal = graph.getVal(currentLocation);
+
+    // if found a dirty spot
+    if(charVal > '0' && charVal <= '9') {
         return 0;
     }
-    // If there is no dirt left, return
+    // if there is no dirt left, return
     if (totalDirt == 0) {
         return -1;
     }
     // Dimensions of the layout
-    int rows = house->getRows() + 2;
-    int cols = house->getCols() + 2;
+    int rows = graph.getGraphSize();
+    int cols = graph.getGraphSize();;
 
     // Queue for BFS and a set for visited cells
     std::queue<Coordinates> q;
@@ -251,13 +341,16 @@ int MyAlgorithm::minDistanceToDirtySpot() {
     std::vector<Direction> directionEnums = { Direction::North, Direction::South, Direction::East, Direction::West };
     
     int dis = 0;
-    Coordinates current = robot->getCurrentLocation();
+    Coordinates current = graph.getCurrLocation();
     while (!q.empty()) {
         current = q.front();
         q.pop();
         
+        if (graph.getVal(current) == '-') {
+            continue;
+        }
         // if the current cell is a dirty spot
-        if(locationIsDirty(current.getX(), current.getY())) {
+        if(locationIsDirty(current)) {
             dis = distance[current.getX()][current.getY()];
             dirtySpot = current;
             break;
@@ -268,8 +361,11 @@ int MyAlgorithm::minDistanceToDirtySpot() {
         for (int i = 0; i < 4; ++i) {
             newX = current.getX() + directions[i].first;
             newY = current.getY() + directions[i].second;
-            if (validLocation(newX, newY) && !visited[newX][newY]) {
-                Coordinates neighbor = {newX, newY};
+            if(newX >= graph.getGraphSize() || newX < 0 || newY >= graph.getGraphSize() || newY < 0) {
+                continue;
+            }
+            Coordinates neighbor = {newX, newY};
+            if (validLocation(neighbor) && !visited[newX][newY]) {
                 q.push(neighbor);
                 visited[newX][newY] = true;
                 distance[newX][newY] = distance[current.getX()][current.getY()] + 1;
@@ -294,8 +390,92 @@ int MyAlgorithm::minDistanceToDirtySpot() {
 }
 
 
+int MyAlgorithm::minDistanceToNewSpot() {
+
+    // Clear the pathToNewSpot for the new run
+    pathToNewSpot.clear();
+    Coordinates currentLocation = graph.getCurrLocation();
+    char charVal = graph.getVal(currentLocation);
+
+    // if found a new spot
+    if (charVal == '-') {
+        return 0;
+    }
+    // if there is no dirt left, return
+    if (totalDirt == 0) {
+        return -1;
+    }
+    // Dimensions of the layout
+    int rows = graph.getGraphSize();
+    int cols = graph.getGraphSize();
+
+    // Queue for BFS and a set for visited cells
+    std::queue<Coordinates> q;
+    std::vector<std::vector<bool>> visited(cols, std::vector<bool>(rows, false));
+    std::vector<std::vector<int>> distance(cols, std::vector<int>(rows, std::numeric_limits<int>::max()));
+    std::map<Coordinates, std::pair<Coordinates, Direction>> parent; // To track the path
+
+    // Start BFS from the current location of the robot
+    //Coordinates currentLocation = robot->getCurrentLocation();
+    q.push(currentLocation);
+    visited[currentLocation.getX()][currentLocation.getY()] = true;
+    distance[currentLocation.getX()][currentLocation.getY()] = 0;
+
+    Coordinates dirtySpot = { -1, -1 };
+
+    // Directions for moving in the grid (North, South, East, West)
+    std::vector<std::pair<int, int>> directions = { {0, -1}/*Nort*/, {0, 1}/*South*/, {1, 0}/*East*/, {-1, 0}/*West*/ };
+    std::vector<Direction> directionEnums = { Direction::North, Direction::South, Direction::East, Direction::West };
+
+    int dis = 0;
+    Coordinates current = graph.getCurrLocation();
+    while (!q.empty()) {
+        current = q.front();
+        q.pop();
+
+        // if the current cell is a dirty spot
+        if (graph.getVal(current) == '-') {
+            dis = distance[current.getX()][current.getY()];
+            dirtySpot = current;
+            break;
+        }
+        // Explore neighbors
+        int newX = -1;
+        int newY = -1;
+        for (int i = 0; i < 4; ++i) {
+            newX = current.getX() + directions[i].first;
+            newY = current.getY() + directions[i].second;
+            if(newX >= graph.getGraphSize() || newX < 0 || newY >= graph.getGraphSize() || newY < 0) {
+                continue;
+            }
+            Coordinates neighbor = { newX, newY };
+            if (validLocation(neighbor) && !visited[newX][newY]) {
+                q.push(neighbor);
+                visited[newX][newY] = true;
+                distance[newX][newY] = distance[current.getX()][current.getY()] + 1;
+                parent[neighbor] = { current, directionEnums[i] };
+            }
+        }
+    }
+    // Return -1 if the the house is clean
+    if (dirtySpot.getX() == -1 && dirtySpot.getY() == -1) {
+        return -1;
+    }
+    // Creating the route to the dirty spot
+    current = dirtySpot;
+    while (!(current == currentLocation)) {
+        auto p = parent[current];
+        pathToNewSpot.push_back(p.second);
+        current = p.first;
+    }
+    // The path is in reverse order, so reverse it
+    std::reverse(pathToNewSpot.begin(), pathToNewSpot.end());
+    return dis;
+}
+
+
 Coordinates MyAlgorithm::getCurrLocation() const {
-    return robot->getCurrentLocation();
+    return graph.getCurrLocation();
 }
 
 
@@ -320,7 +500,7 @@ int MyAlgorithm::getStepsLogSize() {
 
 
 bool MyAlgorithm::isAtDocking() const {
-    return robot->getCurrentLocation() == house->getDockingCoordinates();
+    return graph.getCurrLocation() == graph.getDockingLocation();
 }
 
 
@@ -329,16 +509,20 @@ bool MyAlgorithm::isCharged() const{
 }
 
 
-bool MyAlgorithm::validLocation(int x, int y) const {
-    int maxCol = house->getRows()+2;
-    int maxRow = house->getCols()+2;
-    char c = house->getLayoutVal(x, y);
-    return (x >= 0  && x < maxRow && y >= 0 && y < maxCol && c != 'W');
+bool MyAlgorithm::validLocation(Coordinates coor) const {
+    char c = graph.getVal(coor);
+    int size = graph.getGraphSize();
+    int x = coor.getX();
+    int y = coor.getY();
+    
+    bool b1 = ((c >= '0' && c <= '9') || c == ' ' || c == 'D' || c == '-');
+    bool b2 = (x >= 0 && y >= 0 && x <= size && y <= size);
+    return b1 && b2;
 }
 
 
-bool MyAlgorithm::locationIsDirty(int x, int y) const {
-    char val = house->getLayoutVal(x,y);
+bool MyAlgorithm::locationIsDirty(Coordinates coor) const {
+    char val = graph.getVal(coor);
     return (val > '0' && val <= '9');
 }
 
@@ -350,35 +534,12 @@ void MyAlgorithm::decreaseRemainedSteps() {
 
 void MyAlgorithm::decreaseTotalDirt(){
     totalDirt--;
+    graph.clean();
 }
 
 
 bool MyAlgorithm::isBatteryLow(int battery, int dist_from_docking){
     return ((battery == dist_from_docking + 2) || (battery == dist_from_docking + 1));
-}
-
-
-// call this function only in "Move" cases
-Step MyAlgorithm::chooseDirection() {
-
-    Direction direction;
-    
-    if(isReturningToDocking){ 
-        if(!pathToDocking.empty()){
-            direction = pathToDocking.front();
-            pathToDocking.erase(pathToDocking.begin());
-            return convertDirectionToStep(direction);
-        } 
-    }
-    else if(goToDirtySpot){ 
-        if(!pathToDirtySpot.empty()){
-            direction = pathToDirtySpot.front();
-            pathToDirtySpot.erase(pathToDirtySpot.begin());
-            return convertDirectionToStep(direction);
-        } 
-    }
-    // if we got here it's a bug!
-    return Step::North;
 }
 
 
@@ -432,6 +593,13 @@ char MyAlgorithm::convertStepToChar(Step s){
             return 's';
     }
 
+}
+
+
+
+// Debugging functions
+void MyAlgorithm::printGraph() {
+    graph.printGraph();
 }
 
 

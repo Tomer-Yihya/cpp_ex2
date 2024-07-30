@@ -2,7 +2,9 @@
 #define ALGORITHM_H
 
 #include "abstract_algorithm.h"
-#include "House.h"
+#include "Graph.h"
+#include "MyWallSensor.h"
+#include "MyDirtSensor.h"
 #include "VacuumCleaner.h"
 #include "Coordinates.h"
 #include <algorithm>
@@ -19,11 +21,12 @@ class MyAlgorithm : public AbstractAlgorithm {
     
     private:
         // objects for the algorithm
-        const House* house;
-        const VacuumCleaner* robot;
+        Graph graph;
+        VacuumCleaner* robot;
         const WallsSensor* wallSensor;
         const DirtSensor* dirtSensor;
         const BatteryMeter* batteryMeter;
+        // Coordinates lastCleannigSpot;
         
         // class variables
         int remainedSteps;
@@ -31,14 +34,13 @@ class MyAlgorithm : public AbstractAlgorithm {
         std::size_t maxSteps;
         
         // Flags
-        bool robotIsDead = false;          // A flag that signals if the robot is dead
-        bool isCargging = false;           // A flag that signals that the robot is chrgging
-        bool isReturningToDocking = false; // A flag that signals that the robot is on its way to the Docking station
-        bool goToDirtySpot = true;         // A flag that signals that the robot is on its way to clean
+        bool robotIsDead = false;     // A flag that signals if the robot is dead
+        bool isCargging = false;      // A flag that signals that the robot is chrgging
         
-        //paths between points in the house layout
+        //path between points in the graph
         std::vector<Direction> pathToDocking;   // steps of the way back to the Docking station.
         std::vector<Direction> pathToDirtySpot; // steps to the nearest dirty code
+        std::vector<Direction> pathToNewSpot; // steps to the nearest new code
         
         // steps history
         std::vector<char> stepsListLog;            // all the steps performed by the algorithm
@@ -50,12 +52,22 @@ class MyAlgorithm : public AbstractAlgorithm {
         void setWallsSensor(const WallsSensor& sensor) override;
         void setDirtSensor(const DirtSensor& sensor) override;
         void setBatteryMeter(const BatteryMeter& meter) override;
+        void setStepsAndTotalDirt(int steps, int dirt);
         Step nextStep() override;
-        void initAlgo(House& house, VacuumCleaner& robot, WallsSensor& wallSensor, DirtSensor& dirtSensor, BatteryMeter& batteryMeter);
+        void addWalls();
+        Step returningToDocking();
+        Step returningToClean();
+        Step goToNewSpot();
+        void initAlgo(VacuumCleaner& robot, WallsSensor& wallSensor, DirtSensor& dirtSensor, BatteryMeter& batteryMeter);
+        
+        // A shadow of the robot's movement at home
+        void move(Step step);
+        Coordinates moveCoordinates (Coordinates coor, Direction d);
         
         // BFS function for minimum steps until next spot
         int minDistanceToDockingStation();
         int minDistanceToDirtySpot();
+        int minDistanceToNewSpot();
 
         // getters function
         Coordinates getCurrLocation() const;
@@ -70,15 +82,16 @@ class MyAlgorithm : public AbstractAlgorithm {
         bool isBatteryLow(int battery, int dist_from_docking);
         bool isAtDocking() const;
         bool isCharged() const;
-        bool validLocation(int x, int y) const;
-        bool locationIsDirty(int x, int y) const;
+        bool validLocation(Coordinates coor) const;
+        bool locationIsDirty(Coordinates coor) const;
 
-        Step chooseDirection();
+
         Step convertDirectionToStep(Direction d);
         Direction convertStepToDirection(Step s);
         char convertStepToChar(Step s);
 
         // for Debugging
+        void printGraph();
         void printStepsLog();
         void printPathToDocking();
         void printPathToDirtySpot();

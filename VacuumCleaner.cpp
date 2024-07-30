@@ -5,7 +5,8 @@
 VacuumCleaner::VacuumCleaner(House* house) : 
     house(house), 
     currentLocation(house->getDockingCoordinates()), 
-    battery(house->getBatteryCapacity()) {
+    battery(house->getBatteryCapacity()),
+    maxBattery(house->getBatteryCapacity()) {
 }
 
 
@@ -56,6 +57,10 @@ int VacuumCleaner::getBatteryLevel() const {
     return int(battery.getBatteryState());
 }
 
+
+int VacuumCleaner::getMaxBattery() const {
+    return maxBattery;
+}
 
 Coordinates VacuumCleaner::getCurrentLocation() const {
     return currentLocation;

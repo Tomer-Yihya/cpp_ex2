@@ -1,3 +1,4 @@
+#include "enums.h"
 #include "Coordinates.h"
 #include <iostream>
 
@@ -5,6 +6,7 @@ Coordinates::Coordinates(int x, int y): xValue(x), yValue(y) {}
 
 int Coordinates::getX() const {return xValue;}
 int Coordinates::getY() const {return yValue;}
+
 
 Coordinates Coordinates::getCoordinatesN() const{
     return Coordinates(xValue, yValue-1);

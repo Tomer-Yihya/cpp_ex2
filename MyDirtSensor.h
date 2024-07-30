@@ -13,12 +13,14 @@ class MyDirtSensor : public DirtSensor {
 	private:
 		const House* house;
 		const VacuumCleaner* robot;
+		Coordinates currLocation;
 
 
 	public:
 		MyDirtSensor(const House* house, const VacuumCleaner* robot);
 		virtual ~MyDirtSensor() {}
 		virtual int dirtLevel() const override;
+		void move(Direction d);
 };
 
 

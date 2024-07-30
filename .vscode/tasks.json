@@ -12,6 +12,7 @@
                 "-Werror",
                 "-pedantic",
                 "-g",
+                "Graph.cpp",
                 "MyAlgorithm.cpp",
                 "Coordinates.cpp",
                 "House.cpp",

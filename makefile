@@ -2,7 +2,7 @@
 
 CXX = g++
 CXXFLAGS = -std=c++20 -Wall -Wextra -Werror -pedantic -g
-SOURCES = MyAlgorithm.cpp Coordinates.cpp House.cpp MySimulator.cpp MyBatteryMeter.cpp MyDirtSensor.cpp MyWallSensor.cpp VacuumCleaner.cpp main.cpp
+SOURCES = MyAlgorithm.cpp Graph.cpp Coordinates.cpp House.cpp MySimulator.cpp MyBatteryMeter.cpp MyDirtSensor.cpp MyWallSensor.cpp VacuumCleaner.cpp main.cpp
 EXECUTABLE = myrobot
 
 all: $(EXECUTABLE)

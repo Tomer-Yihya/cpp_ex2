@@ -14,6 +14,7 @@ class VacuumCleaner {
         House* house;
         Coordinates currentLocation;
         MyBatteryMeter battery;
+        int maxBattery;
 
     public:
         // constructor
@@ -28,6 +29,7 @@ class VacuumCleaner {
 
         // getters
         int getBatteryLevel() const;
+        int getMaxBattery() const;
         Coordinates getCurrentLocation() const;
 };
 

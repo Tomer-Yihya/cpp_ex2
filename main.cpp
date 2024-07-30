@@ -3,12 +3,9 @@
 #include "enums.h"
 #include "Coordinates.h"
 #include "MyAlgorithm.h"
-#include "Coordinates.h"
 #include <iostream>
 #include <string>
 #include <cstring>
-
-
 
 
 int main(int argc, char** argv) {

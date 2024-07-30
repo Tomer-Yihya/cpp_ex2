@@ -40,6 +40,7 @@ class MySimulator {
         void printLocation();
         void printLayout();
         void printStepStatus();
+        void printGraphStatus(int remainedSteps, int battery);
 };
 
 #endif // MYSIMULATOR_H
