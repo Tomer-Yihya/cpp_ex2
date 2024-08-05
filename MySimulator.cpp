@@ -31,7 +31,7 @@ void MySimulator::run() {
         
         //printGraphStatus(algorithm->getRemainedSteps(), robot.getBatteryLevel());
         Step step = algorithm->nextStep();
-
+        
         // Stay/CLEAN
         if(step == Step::Stay) {
             // CHARGE
@@ -61,7 +61,6 @@ void MySimulator::run() {
             algorithm->move(algorithm->convertDirectionToStep(direction));
         } 
         algorithm->decreaseRemainedSteps();
-        //if(step != Step::Finish && step != Step::Stay) { printStepStatus(); } 
     }
 
     if(algorithm->getRemainedSteps() == 0 && robot.getBatteryLevel() > 0 && algorithm->isAtDocking()){
@@ -69,7 +68,7 @@ void MySimulator::run() {
     }
     // create output file
     writeOutput();
-    printGraphStatus(algorithm->getRemainedSteps(), robot.getBatteryLevel());
+    //printGraphStatus(algorithm->getRemainedSteps(), robot.getBatteryLevel());
 }
 
 
@@ -152,5 +151,7 @@ void MySimulator::printStepStatus() {
 void MySimulator::printGraphStatus(int remainedSteps, int battery) {
     std::cout << "remainedSteps = " << remainedSteps << std::endl;
     std::cout << "battery = " << battery << std::endl;
+    //algorithm->printPathToDocking();
+    //algorithm->printPathToDirtySpot();
     algorithm->printGraph();
 }

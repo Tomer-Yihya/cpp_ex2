@@ -22,9 +22,9 @@ int main(int argc, char** argv) {
         }
         MyAlgorithm algo;
         simulator.setAlgorithm(algo);
-        simulator.printStepStatus(); // see the house before 
+        //simulator.printStepStatus(); // see the house before 
         simulator.run();
-        simulator.printStepStatus(); // see the house after
+        //simulator.printStepStatus(); // see the house after
     }
     catch (const std::exception& ex) {
         std::cerr << "Error: " << ex.what() << std::endl;
@@ -33,39 +33,3 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-
-
-/*
-int main() {
-    
-    Graph graph;
-    graph.addNode(Coordinates{1,2}, '5');
-    graph.addNode(Coordinates{2,3}, '5');
-    graph.addNode(Coordinates{2,1}, '7');
-    graph.addNode(Coordinates{3,2}, '7');
-    graph.printGraph();
-    graph.resizeE();
-    graph.printGraph();
-    graph.resize();
-    graph.printGraph();
-    
-    graph.resizeE();
-    graph.printGraph();
-    graph.resize();
-    graph.printGraph();
-
-    graph.resizeE();
-    graph.resize();
-    graph.printGraph();
-
-    graph.resizeE();
-    graph.resize();
-    graph.printGraph();
-    std::cout << "row = " << graph.getNumOfRows() << std::endl;
-    std::cout << "col = " << graph.getNumOfCols() << std::endl;
-    graph.printGraph();
-    
-
-    return 0;
-}
-*/

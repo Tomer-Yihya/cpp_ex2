@@ -40,8 +40,7 @@ class MyAlgorithm : public AbstractAlgorithm {
         //path between points in the graph
         std::vector<Direction> pathToDocking;   // steps of the way back to the Docking station.
         std::vector<Direction> pathToDirtySpot; // steps to the nearest dirty code
-        std::vector<Direction> pathToNewSpot; // steps to the nearest new code
-        
+                
         // steps history
         std::vector<char> stepsListLog;            // all the steps performed by the algorithm
 
@@ -54,9 +53,10 @@ class MyAlgorithm : public AbstractAlgorithm {
         void setBatteryMeter(const BatteryMeter& meter) override;
         void setStepsAndTotalDirt(int steps, int dirt);
         Step nextStep() override;
+        void graphReduceLines();
         void addWalls();
         Step returningToDocking();
-        Step returningToClean();
+        Step goToClean();
         Step goToNewSpot();
         void initAlgo(VacuumCleaner& robot, WallsSensor& wallSensor, DirtSensor& dirtSensor, BatteryMeter& batteryMeter);
         
@@ -66,8 +66,7 @@ class MyAlgorithm : public AbstractAlgorithm {
         
         // BFS function for minimum steps until next spot
         int minDistanceToDockingStation();
-        int minDistanceToDirtySpot();
-        int minDistanceToNewSpot();
+        int minDistanceToClean();
 
         // getters function
         Coordinates getCurrLocation() const;

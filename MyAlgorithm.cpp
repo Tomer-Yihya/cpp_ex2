@@ -38,23 +38,22 @@ void MyAlgorithm::setStepsAndTotalDirt(int steps, int dirt){
 
 
 Step MyAlgorithm::nextStep() {
+    
     // DEAD
     if(remainedSteps <= 0) {
         robotIsDead = true;
+        graphReduceLines();
         return Step::Finish; // DEAD
     }
     // FINISH
     if(totalDirt == 0 && isAtDocking()){
         stepsListLog.push_back('F');
+        graphReduceLines();
         return Step::Finish;
     }
     // Check if there are walls around the current location and add to the graph if so
     addWalls();
-    while(1) {
-        if(!graph.updateLayout()){
-            break;
-        }
-    }
+
     // CLEAN or go to CHARGE
     int battery = robot->getBatteryLevel();
     if(battery == robot->getMaxBattery()) {
@@ -65,41 +64,39 @@ Step MyAlgorithm::nextStep() {
     if(totalDirt == 0 || isBatteryLow(battery, dist_from_docking) || isCargging || dist_from_docking == remainedSteps) {
         return returningToDocking();    
     }
-    int dist_from_dirty_spot = minDistanceToDirtySpot();
-    int dist_from_new_spot = minDistanceToNewSpot();
+    int dist_from_dirty_spot = minDistanceToClean();
     // if there is no new point in the graph that needs to be checked and there is also no point that needs to be cleared, 
     // resize the graph and try to find again
-    if(dist_from_new_spot == -1 && dist_from_dirty_spot == -1) {
+    if(dist_from_dirty_spot == -1) {
         graph.resize();
-        dist_from_new_spot = minDistanceToNewSpot();
+        dist_from_dirty_spot = minDistanceToClean();
     }
     // We are done or it is not possible to continue cleaning - go to Docking station and Finish
-    if((dist_from_dirty_spot == -1) && (dist_from_new_spot == -1)) {
+    if(dist_from_dirty_spot == -1) {
         // at a docking station and there is no way to reach the remaining dirt
         if(isAtDocking()) {
             stepsListLog.push_back(convertStepToChar(Step::Stay));
+            graphReduceLines();
             return Step::Finish;
         }
         return returningToDocking();
     }
     // if there are not enough steps to clean or check new spot - go to Docking station and Finish 
-    else if (((2 * dist_from_dirty_spot) > remainedSteps) && ((2 * dist_from_new_spot) > remainedSteps)) {
+    else if ((2 * dist_from_dirty_spot) > remainedSteps) {
+        graphReduceLines();
         return returningToDocking();
     }
     // if there is no new spot known to the robot go to a dirt spot 
-    else if (dist_from_dirty_spot != -1 && dist_from_new_spot == -1) {
-        return returningToClean();
-    }
-    // if there is no dirt known to the robot go to a new point
-    else if (dist_from_dirty_spot == -1 && dist_from_new_spot != -1) {
-        return goToNewSpot();
-    }
-    // if there is known dirt and also a new spot that needs to be checked, go to the one that is closer.
-    else {
-        return dist_from_new_spot < dist_from_dirty_spot ? goToNewSpot() : returningToClean();
+    else { //(dist_from_dirty_spot != -1) {
+        return goToClean();
     }
     // Default setting
     return returningToDocking();
+}
+
+
+void MyAlgorithm::graphReduceLines() {
+    while(graph.updateLayout());
 }
 
 
@@ -147,7 +144,7 @@ Step MyAlgorithm::returningToDocking() {
         }
         else if(isCharged()) {
             isCargging = false;
-            return returningToClean(); // MOVE
+            return goToClean(); // MOVE
         }
         else { //(still chargging)
             isCargging = true;
@@ -166,7 +163,7 @@ Step MyAlgorithm::returningToDocking() {
 }
 
 
-Step MyAlgorithm::returningToClean() {
+Step MyAlgorithm::goToClean() {
     Step step;
     // reached the dirty point
     if(dirtSensor->dirtLevel() > 0) { 
@@ -176,23 +173,6 @@ Step MyAlgorithm::returningToClean() {
     else { 
         Direction dir = pathToDirtySpot.front();
         pathToDirtySpot.erase(pathToDirtySpot.begin());
-        step = convertDirectionToStep(dir); // Move
-    }
-    stepsListLog.push_back(convertStepToChar(step));
-    return step;
-}
-
-
-Step MyAlgorithm::goToNewSpot() {
-    Step step;
-    // reached the new spot
-    if (dirtSensor->dirtLevel() > 0) {
-        step = Step::Stay;
-    }
-    // on our way to the dirty spot
-    else {
-        Direction dir = pathToNewSpot.front();
-        pathToNewSpot.erase(pathToNewSpot.begin());
         step = convertDirectionToStep(dir); // Move
     }
     stepsListLog.push_back(convertStepToChar(step));
@@ -237,7 +217,6 @@ Coordinates MyAlgorithm::moveCoordinates (Coordinates coor, Direction d) {
     }
     return coor;
 }
-
 
 // helper functions for nextStep
 int MyAlgorithm::minDistanceToDockingStation() {
@@ -294,7 +273,7 @@ int MyAlgorithm::minDistanceToDockingStation() {
                 continue;;
             }
             Coordinates neighbor = {newX, newY};
-            if (validLocation(neighbor) && !visited[newX][newY]) {
+            if (graph.getVal(neighbor) != '-' && validLocation(neighbor) && !visited[newX][newY]) {
                 q.push(neighbor);
                 visited[newX][newY] = true;
                 distance[newX][newY] = distance[current.getX()][current.getY()] + 1;
@@ -320,7 +299,7 @@ int MyAlgorithm::minDistanceToDockingStation() {
 }
 
 
-int MyAlgorithm::minDistanceToDirtySpot() {
+int MyAlgorithm::minDistanceToClean() {
     
     // Clear the pathToDirtySpot for the new run
     pathToDirtySpot.clear();
@@ -328,7 +307,7 @@ int MyAlgorithm::minDistanceToDirtySpot() {
     char charVal = graph.getVal(currentLocation);
 
     // if found a dirty spot
-    if(charVal > '0' && charVal <= '9') {
+    if((charVal > '0' && charVal <= '9') || charVal == '-') {
         return 0;
     }
     // if there is no dirt left, return
@@ -354,20 +333,16 @@ int MyAlgorithm::minDistanceToDirtySpot() {
     Coordinates dirtySpot = {-1, -1};
 
     // Directions for moving in the grid (North, South, East, West)
-    std::vector<std::pair<int, int>> directions = { {0, -1}/*Nort*/, {0, 1}/*South*/, {1, 0}/*East*/, {-1, 0}/*West*/ };
-    std::vector<Direction> directionEnums = { Direction::North, Direction::South, Direction::East, Direction::West };
+    std::vector<std::pair<int, int>> directions = { {0, -1}/*Nort*/, {1, 0}/*East*/, {0, 1}/*South*/, {-1, 0}/*West*/ };
+    std::vector<Direction> directionEnums = { Direction::North, Direction::East, Direction::South, Direction::West };
     
     int dis = 0;
     Coordinates current = graph.getCurrLocation();
     while (!q.empty()) {
         current = q.front();
-        q.pop();
-        
-        if (graph.getVal(current) == '-') {
-            continue;
-        }
-        // if the current cell is a dirty spot
-        if(locationIsDirty(current)) {
+        q.pop();       
+        // if the current cell is a dirty spot or a new spot
+        if(locationIsDirty(current) || graph.getVal(current) == '-') {
             dis = distance[current.getX()][current.getY()];
             dirtySpot = current;
             break;
@@ -404,90 +379,6 @@ int MyAlgorithm::minDistanceToDirtySpot() {
     // The path is in reverse order, so reverse it
     std::reverse(pathToDirtySpot.begin(), pathToDirtySpot.end());
     return dis; 
-}
-
-
-int MyAlgorithm::minDistanceToNewSpot() {
-
-    // Clear the pathToNewSpot for the new run
-    pathToNewSpot.clear();
-    Coordinates currentLocation = graph.getCurrLocation();
-    char charVal = graph.getVal(currentLocation);
-
-    // if found a new spot
-    if (charVal == '-') {
-        return 0;
-    }
-    // if there is no dirt left, return
-    if (totalDirt == 0) {
-        return -1;
-    }
-    // Dimensions of the layout
-    int rows = graph.getNumOfRows();
-    int cols = graph.getNumOfCols();
-
-    // Queue for BFS and a set for visited cells
-    std::queue<Coordinates> q;
-    std::vector<std::vector<bool>> visited(cols, std::vector<bool>(rows, false));
-    std::vector<std::vector<int>> distance(cols, std::vector<int>(rows, std::numeric_limits<int>::max()));
-    std::map<Coordinates, std::pair<Coordinates, Direction>> parent; // To track the path
-
-    // Start BFS from the current location of the robot
-    //Coordinates currentLocation = robot->getCurrentLocation();
-    q.push(currentLocation);
-    visited[currentLocation.getX()][currentLocation.getY()] = true;
-    distance[currentLocation.getX()][currentLocation.getY()] = 0;
-
-    Coordinates dirtySpot = { -1, -1 };
-
-    // Directions for moving in the grid (North, South, East, West)
-    std::vector<std::pair<int, int>> directions = { {0, -1}/*Nort*/, {0, 1}/*South*/, {1, 0}/*East*/, {-1, 0}/*West*/ };
-    std::vector<Direction> directionEnums = { Direction::North, Direction::South, Direction::East, Direction::West };
-
-    int dis = 0;
-    Coordinates current = graph.getCurrLocation();
-    while (!q.empty()) {
-        current = q.front();
-        q.pop();
-
-        // if the current cell is a dirty spot
-        if (graph.getVal(current) == '-') {
-            dis = distance[current.getX()][current.getY()];
-            dirtySpot = current;
-            break;
-        }
-        // Explore neighbors
-        int newX = -1;
-        int newY = -1;
-        for (int i = 0; i < 4; ++i) {
-            newX = current.getX() + directions[i].first;
-            newY = current.getY() + directions[i].second;
-            if(newX >= graph.getNumOfCols() || newX < 0 || newY >= graph.getNumOfRows() || newY < 0) {
-                continue;
-            }
-            Coordinates neighbor = { newX, newY };
-            if (validLocation(neighbor) && !visited[newX][newY]) {
-                q.push(neighbor);
-                visited[newX][newY] = true;
-                distance[newX][newY] = distance[current.getX()][current.getY()] + 1;
-                parent[neighbor] = { current, directionEnums[i] };
-            }
-        }
-    }
-    // Return -1 if the the house is clean
-    if (dirtySpot.getX() == -1 && dirtySpot.getY() == -1) {
-        return -1;
-    }
-    // Creating the route to the dirty spot
-    current = dirtySpot;
-    while (!(current == currentLocation)) {
-        auto p = parent[current];
-        pathToNewSpot.push_back(p.second);
-        current = p.first;
-    }
-    // The path is in reverse order, so reverse it
-    std::reverse(pathToNewSpot.begin(), pathToNewSpot.end());
-    return dis;
 }
 
 
@@ -557,7 +448,7 @@ void MyAlgorithm::decreaseTotalDirt(){
 
 
 bool MyAlgorithm::isBatteryLow(int battery, int dist_from_docking){
-    return ((battery == dist_from_docking + 2) || (battery == dist_from_docking + 1));
+    return (battery < dist_from_docking + 3);
 }
 
 
