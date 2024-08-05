@@ -31,7 +31,7 @@ void MySimulator::run() {
         
         //printGraphStatus(algorithm->getRemainedSteps(), robot.getBatteryLevel());
         Step step = algorithm->nextStep();
-        
+
         // Stay/CLEAN
         if(step == Step::Stay) {
             // CHARGE
@@ -69,7 +69,7 @@ void MySimulator::run() {
     }
     // create output file
     writeOutput();
-    //printGraphStatus(algorithm->getRemainedSteps(), robot.getBatteryLevel());
+    printGraphStatus(algorithm->getRemainedSteps(), robot.getBatteryLevel());
 }
 
 

@@ -50,6 +50,11 @@ Step MyAlgorithm::nextStep() {
     }
     // Check if there are walls around the current location and add to the graph if so
     addWalls();
+    while(1) {
+        if(!graph.updateLayout()){
+            break;
+        }
+    }
     // CLEAN or go to CHARGE
     int battery = robot->getBatteryLevel();
     if(battery == robot->getMaxBattery()) {
@@ -62,12 +67,13 @@ Step MyAlgorithm::nextStep() {
     }
     int dist_from_dirty_spot = minDistanceToDirtySpot();
     int dist_from_new_spot = minDistanceToNewSpot();
+    // if there is no new point in the graph that needs to be checked and there is also no point that needs to be cleared, 
+    // resize the graph and try to find again
     if(dist_from_new_spot == -1 && dist_from_dirty_spot == -1) {
         graph.resize();
         dist_from_new_spot = minDistanceToNewSpot();
     }
-    
-    // We are done or it is not possible to continue cleaning
+    // We are done or it is not possible to continue cleaning - go to Docking station and Finish
     if((dist_from_dirty_spot == -1) && (dist_from_new_spot == -1)) {
         // at a docking station and there is no way to reach the remaining dirt
         if(isAtDocking()) {
@@ -76,14 +82,21 @@ Step MyAlgorithm::nextStep() {
         }
         return returningToDocking();
     }
-    else if ((2 * dist_from_dirty_spot) > remainedSteps) {
+    // if there are not enough steps to clean or check new spot - go to Docking station and Finish 
+    else if (((2 * dist_from_dirty_spot) > remainedSteps) && ((2 * dist_from_new_spot) > remainedSteps)) {
         return returningToDocking();
     }
-    else if (dist_from_dirty_spot != -1) {
+    // if there is no new spot known to the robot go to a dirt spot 
+    else if (dist_from_dirty_spot != -1 && dist_from_new_spot == -1) {
         return returningToClean();
     }
-    else {
+    // if there is no dirt known to the robot go to a new point
+    else if (dist_from_dirty_spot == -1 && dist_from_new_spot != -1) {
         return goToNewSpot();
+    }
+    // if there is known dirt and also a new spot that needs to be checked, go to the one that is closer.
+    else {
+        return dist_from_new_spot < dist_from_dirty_spot ? goToNewSpot() : returningToClean();
     }
     // Default setting
     return returningToDocking();
@@ -92,20 +105,22 @@ Step MyAlgorithm::nextStep() {
 
 void MyAlgorithm::addWalls() {
     Coordinates wallCoordinates = getCurrLocation();
-    int size = graph.getGraphSize();
+    int colSize = graph.getNumOfCols();
+    int rowSize = graph.getNumOfRows();
     int x = wallCoordinates.getX();
     int y = wallCoordinates.getY(); 
-    if (x == 0 || x == size-1 || y == 0 || y == size-1) {
+    if (x == 0 || x == colSize-1 || y == 0 || y == rowSize-1) {
+        //graph.resize();
         if (y == 0) {
             graph.resizeN();
         }
-        if (y == size-1) {
+        if (y == rowSize-1) {
             graph.resizeS();
         }
         if (x == 0) {
             graph.resizeW();
         }
-        if (x == size-1) {
+        if (x == colSize-1) {
             graph.resizeE();
         }
     }
@@ -192,7 +207,6 @@ void  MyAlgorithm::initAlgo(VacuumCleaner& robot, WallsSensor& wallSensor, DirtS
     setDirtSensor(dirtSensor);
     setBatteryMeter(batteryMeter); 
     setMaxSteps(remainedSteps);
-    // lastCleannigSpot = graph.getDockingLocation();
 }
 
 
@@ -235,8 +249,8 @@ int MyAlgorithm::minDistanceToDockingStation() {
         return 0;
     }
     // Dimensions of the graph
-    int rows = graph.getGraphSize();
-    int cols = graph.getGraphSize();
+    int rows = graph.getNumOfRows();
+    int cols = graph.getNumOfCols();
 
     // Queue for BFS and a set for visited cells
     std::queue<Coordinates> q;
@@ -262,7 +276,7 @@ int MyAlgorithm::minDistanceToDockingStation() {
         current = q.front();
         q.pop();
         // if current is out of the graph
-        if(current.getX() >= rows || current.getY() >= cols || current.getX() < 0 || current.getY() < 0) {
+        if(current.getX() >= cols || current.getY() >= rows || current.getX() < 0 || current.getY() < 0) {
             continue;
         }
         // check if the current cell is the docking station
@@ -276,7 +290,7 @@ int MyAlgorithm::minDistanceToDockingStation() {
         for (int i = 0; i < 4; ++i) {
             newX = current.getX() + directions[i].first;
             newY = current.getY() + directions[i].second;
-            if (newX >= rows || newX < 0 || newY >= rows || newY < 0) {
+            if (newX >= cols || newX < 0 || newY >= rows || newY < 0) {
                 continue;;
             }
             Coordinates neighbor = {newX, newY};
@@ -322,8 +336,8 @@ int MyAlgorithm::minDistanceToDirtySpot() {
         return -1;
     }
     // Dimensions of the layout
-    int rows = graph.getGraphSize();
-    int cols = graph.getGraphSize();;
+    int rows = graph.getNumOfRows();
+    int cols = graph.getNumOfCols();;
 
     // Queue for BFS and a set for visited cells
     std::queue<Coordinates> q;
@@ -364,7 +378,7 @@ int MyAlgorithm::minDistanceToDirtySpot() {
         for (int i = 0; i < 4; ++i) {
             newX = current.getX() + directions[i].first;
             newY = current.getY() + directions[i].second;
-            if(newX >= graph.getGraphSize() || newX < 0 || newY >= graph.getGraphSize() || newY < 0) {
+            if(newX >= graph.getNumOfCols() || newX < 0 || newY >= graph.getNumOfRows() || newY < 0) {
                 continue;
             }
             Coordinates neighbor = {newX, newY};
@@ -409,8 +423,8 @@ int MyAlgorithm::minDistanceToNewSpot() {
         return -1;
     }
     // Dimensions of the layout
-    int rows = graph.getGraphSize();
-    int cols = graph.getGraphSize();
+    int rows = graph.getNumOfRows();
+    int cols = graph.getNumOfCols();
 
     // Queue for BFS and a set for visited cells
     std::queue<Coordinates> q;
@@ -448,7 +462,7 @@ int MyAlgorithm::minDistanceToNewSpot() {
         for (int i = 0; i < 4; ++i) {
             newX = current.getX() + directions[i].first;
             newY = current.getY() + directions[i].second;
-            if(newX >= graph.getGraphSize() || newX < 0 || newY >= graph.getGraphSize() || newY < 0) {
+            if(newX >= graph.getNumOfCols() || newX < 0 || newY >= graph.getNumOfRows() || newY < 0) {
                 continue;
             }
             Coordinates neighbor = { newX, newY };
@@ -514,12 +528,13 @@ bool MyAlgorithm::isCharged() const{
 
 bool MyAlgorithm::validLocation(Coordinates coor) const {
     char c = graph.getVal(coor);
-    int size = graph.getGraphSize();
+    int rowSize = graph.getNumOfRows();
+    int colSize = graph.getNumOfCols();
     int x = coor.getX();
     int y = coor.getY();
     
     bool b1 = ((c >= '0' && c <= '9') || c == ' ' || c == 'D' || c == '-');
-    bool b2 = (x >= 0 && y >= 0 && x <= size && y <= size);
+    bool b2 = (x >= 0 && y >= 0 && x <= colSize && y <= rowSize);
     return b1 && b2;
 }
 
