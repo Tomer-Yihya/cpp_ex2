@@ -39,32 +39,37 @@ void MyAlgorithm::setStepsAndTotalDirt(int steps, int dirt){
 
 Step MyAlgorithm::nextStep() {
     
+    graphReduceLines();
     // DEAD
     if(remainedSteps <= 0) {
         robotIsDead = true;
-        graphReduceLines();
         return Step::Finish; // DEAD
     }
     // FINISH
     if(totalDirt == 0 && isAtDocking()){
         stepsListLog.push_back('F');
-        graphReduceLines();
         return Step::Finish;
     }
+
     // Check if there are walls around the current location and add to the graph if so
     addWalls();
 
-    // CLEAN or go to CHARGE
+    int dist_from_docking = minDistanceToDockingStation();
     int battery = robot->getBatteryLevel();
+    int dist_from_dirty_spot = minDistanceToClean();
+    // Edge case of low battery - Finish (don't go to unnecessary trips)
+    if(isAtDocking() && isCharged() && battery == (2 * dist_from_dirty_spot + 1)) {
+        stepsListLog.push_back('F');
+        return Step::Finish;
+    }
+    // CLEAN or go to CHARGE
     if(battery == robot->getMaxBattery()) {
         isCargging = false;
     }
-    int dist_from_docking = minDistanceToDockingStation();
     // if the house is clean OR the battery is low - go to the Docking station
     if(totalDirt == 0 || isBatteryLow(battery, dist_from_docking) || isCargging || dist_from_docking == remainedSteps) {
         return returningToDocking();    
     }
-    int dist_from_dirty_spot = minDistanceToClean();
     // if there is no new point in the graph that needs to be checked and there is also no point that needs to be cleared, 
     // resize the graph and try to find again
     if(dist_from_dirty_spot == -1) {
@@ -76,14 +81,12 @@ Step MyAlgorithm::nextStep() {
         // at a docking station and there is no way to reach the remaining dirt
         if(isAtDocking()) {
             stepsListLog.push_back(convertStepToChar(Step::Stay));
-            graphReduceLines();
             return Step::Finish;
         }
         return returningToDocking();
     }
     // if there are not enough steps to clean or check new spot - go to Docking station and Finish 
     else if ((2 * dist_from_dirty_spot) > remainedSteps) {
-        graphReduceLines();
         return returningToDocking();
     }
     // if there is no new spot known to the robot go to a dirt spot 
